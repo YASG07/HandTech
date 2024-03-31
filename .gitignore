@@ -1,0 +1,6 @@
+#caché generado al ejecutar el programa
+/_pycache_
+
+#editor de directorios y archivos
+.idea
+.vscode/*
