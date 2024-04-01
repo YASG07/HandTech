@@ -53,4 +53,60 @@ def t_ID(token):
         token.type = token.value
     return token
 
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
 #Retomar en el minuto 20:30 del vídeo Analizador léxico en python
+
+def t_COMMENT(t):
+    r'\;.*'
+    pass
+
+def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value) #Linea que posiblemente eliminemos
+    return t
+
+def t_error(t):
+    print("Caracter Ilegal '%s'"%t.value)
+    t.lexer.skip(1)
+
+def buscarFicheros(directorio):
+    ficheros = []
+    numArchivos = ''
+    respuesta = False
+    cont = 1
+
+    for base, dirs, files in os.walk(directorio):
+        ficheros.append(files)
+
+    for file in files:
+        print(str(cont)+". "+file)
+        cont = cont+1
+
+    while respuesta == False:
+        numArchivos = input('\nNumero del test: ')
+        for file in files:
+            if file == files[int(numArchivos)-1]:
+                respuesta = True
+                break
+    print("Has escogido \"%s\" \n" %files[int(numArchivos)-1])
+    
+    return files[int(numArchivos)-1]
+
+directorio = 'C:/Compilador/HandTech/src/Test/'
+archivo = buscarFicheros(directorio)
+test = directorio+archivo
+fp = codecs.open(test,"r","UTF-8")
+cadena = fp.read()
+fp.close()
+
+analizador = lex.lex()
+
+analizador.input(cadena)
+
+while True:
+    tok = analizador.token()
+    if not tok : break
+    print(tok)
