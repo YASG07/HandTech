@@ -5,108 +5,228 @@ import re
 import codecs
 import os
 import sys
-
-tokens = ['ID', 'NUMBER', 'MINUS', 'TIMES', 'DIVIDE', 'ODD', 'ASSIGN', 'NE', 'LTE', 'GT', 'GTE', 'LPARENT',
-          'RPARENT', 'COMMA', 'SEMICOLON', 'DOT', 'UPDATE']
-
-reservadas = {
-    'begin':'BEGIN',
-    'end':'END',
-    'if':'IF',
-    'then':'THEN',
-    'while':'WHILE',
-    'do':'DO',
-    'call':'CALL',
-    'const':'CONST',
-    'int':'INT',
-    'procedure':'PROCEDURE',
-    'out':'OUT',
-    'in':'IN',
-    'else':'ELSE',
+tokens = {
+    'if',
+    'then',
+    'else',
+    'for',
+    'while',
+    'stop',
+    'method',
+    'run',
+    'return',
+    'console',
+    'export',
+    'import',
+    'mbm',
+    'arm',
+    'hand',
+    'rotate',
+    'fng1',
+    'fng2',
+    'fng3',
+    'fng4',
+    'fng5',
+    'is',
+    'mov',
+    'force',
+    'sensor',
+    'weight',
+    'block',
+    'up',
+    'down',
+    'linkage',
+    'wrist',
+    'piRad',
+    'degree',
+    'wait',
+    'ID',
+    'NUMBER',
+    'DECIMAL',
+    'BOOL',
+    'PLUS',
+    'INCRE',
+    'MINUS',
+    'TIMES',
+    'DIVIDE',
+    'LT',
+    'GT',
+    'LPARENT',
+    'RPARENT',
+    'LKEY',
+    'RKEY',
+    'SBLKEY',
+    'SBRKEY',
+    'SEMICOLON',
+    'TWPOINT',
+    'COMMA',
+    'DOT',
+    'NE',
+    'ASSIGN',
+    'LTE',
+    'GTE',
+    'AND',
+    'NOT',
+    'COMENTARIOS',
 }
 
-tokens = tokens + list(reservadas.values())
-
-t_ignore = '\t'
+#Expresiones regulares para Tokens Simples
 t_PLUS = r'\+'
+t_INCRE = r'\++'
+#t_DECRE = r'\--' #Posiblemente no jale
 t_MINUS = r'\-'
 t_TIMES = r'\*'
 t_DIVIDE = r'/'
-t_ODD = r'ODD'
-t_ASSIGN = r'='
-t_NE = r'<>'
 t_LT = r'<'
-t_LTE = r'<='
 t_GT = r'>'
-t_GTE = r'>='
 t_LPARENT = r'\('
 t_RPARENT = r'\)'
-t_COMMA = r','
+t_LKEY = r'\{'
+t_RKEY = r'\}'
+t_SBLKEY = r'\['
+t_SBRKEY = r'\['
 t_SEMICOLON = r';'
+t_TWPOINT = r':'
+t_COMMA = r','
 t_DOT = r'\.'
-t_UPDATE = r':='
+#Expresiones regulares para operadores de comparación y lógicos
+t_NE = r'<>'
+t_ASSIGN = r'='
+t_LTE = r'<='
+t_GTE = r'>='
+t_AND = r'AND'
+t_NOT = r'NOT'
 
-def t_ID(token):
+#Expresión Regular para Números decimales
+def t_DECIMAL(t):
+    r'\d+\.\d+'
+    t.value = float(t.value)
+    return t
+
+#Expresión Regular para Números Enteros
+def t_NUMBER(t):
+    r'\d+'
+    t.value = int(t.value)
+    return t
+
+#Expresión Regular para Booleanos
+def t_BOOL(t):
+    r'[Vv]alor|[Ff]also'
+    t.value = True if t.value.lower() == 'valor' else False
+    return t
+
+#Expresión Regular para identificadores (nombres de variables, funciones, etc.).
+def t_ID(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
-    if token.value.upper() in reservadas:
-        token.value = token.value.upper()
-        token.type = token.value
-    return token
+    if t.value == 'if':
+        t.type == 'if'
+    elif t.value == 'then':
+        t.type == 'then'
+    elif t.value == 'else':
+        t.type == 'else'
+    elif t.value == 'for':
+        t.type == 'for'
+    elif t.value == 'while':
+        t.type == 'while'
+    elif t.value == 'stop':
+        t.type == 'stop'
+    elif t.value == 'method':
+        t.type == 'method'
+    elif t.value == 'run':
+        t.type == 'run'
+    elif t.value == 'return':
+        t.type == 'return'
+    elif t.value == 'console':
+        t.type == 'console'
+    elif t.value == 'export':
+        t.type == 'export'
+    elif t.value == 'import':
+        t.type == 'import'
+    elif t.value == 'mbm':
+        t.type == 'mbm'
+    elif t.value == 'arm':
+        t.type == 'arm'
+    elif t.value == 'hand':
+        t.type == 'hand'
+    elif t.value == 'rotate':
+        t.type == 'rotate'
+    elif t.value == 'fng1':
+        t.type == 'fng1'
+    elif t.value == 'fng2':
+        t.type == 'fng2'
+    elif t.value == 'fng3':
+        t.type == 'fng3'
+    elif t.value == 'fng4':
+        t.type == 'fng4'
+    elif t.value == 'fng5':
+        t.type == 'fng5'
+    elif t.value == 'is':
+        t.type == 'is'
+    elif t.value == 'mov':
+        t.type == 'mov'
+    elif t.value == 'force':
+        t.type == 'force'
+    elif t.value == 'sensor':
+        t.type == 'sensor'
+    elif t.value == 'weight':
+        t.type == 'weight'
+    elif t.value == 'block':
+        t.type == 'block'
+    elif t.value == 'up':
+        t.type == 'up'
+    elif t.value == 'down':
+        t.type == 'down'
+    elif t.value == 'linkage':
+        t.type == 'linkage'
+    elif t.value == 'wrist':
+        t.type == 'wrist'
+    elif t.value == 'piRad':
+        t.type == 'piRad'
+    elif t.value == 'degree':
+        t.type == 'degree'
+    elif t.value == 'wait':
+        t.type == 'wait'
+    elif t.value == 'ID':
+        t.type == 'NUMBER'
+    elif t.value == 'DECIMAL':
+        t.type == 'DECIMAL'
+    elif t.value == 'BOOL':
+        t.type == 'BOOL'
+    #elif t.value == 'PLUS': No se si van lo de las operaciones o ne
+       # t.type == 'PLUS' Tampoco se si va lo que serian los signos de agrupacion,
+    # Comas y todas esas vainas, queda por ver
+    elif t.value == 'AND':
+        t.type == 'AND'
+    elif t.value == 'NOT':
+        t.type == 'NOT'
+    return t
 
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
-
-#Retomar en el minuto 20:30 del vídeo Analizador léxico en python
-
-def t_COMMENT(t):
+#Expresión Regular para comentarios
+def t_COMENTARIOS(t):
     r'\;.*'
     pass
 
-def t_NUMBER(t):
-    r'\d+'
-    t.value = int(t.value) #Linea que posiblemente eliminemos
-    return t
+#Ignora espacios en blanco y tabulaciones
+t_ignore = '\t'
 
+# Manejo de errores
 def t_error(t):
-    print("Caracter Ilegal '%s'"%t.value)
+    print(f"Illegal character '{t.value[0]}' at line {t.lexer.lineno}")
     t.lexer.skip(1)
 
-def buscarFicheros(directorio):
-    ficheros = []
-    numArchivos = ''
-    respuesta = False
-    cont = 1
+# Evitar la impresión de advertencias sobre tokens no utilizados
+lex.errorlog = lex.NullLogger()
 
-    for base, dirs, files in os.walk(directorio):
-        ficheros.append(files)
+# Construcción del analizador léxico
+lexer = lex.lex()
 
-    for file in files:
-        print(str(cont)+". "+file)
-        cont = cont+1
+codigo = """
 
-    while respuesta == False:
-        numArchivos = input('\nNumero del test: ')
-        for file in files:
-            if file == files[int(numArchivos)-1]:
-                respuesta = True
-                break
-    print("Has escogido \"%s\" \n" %files[int(numArchivos)-1])
-    
-    return files[int(numArchivos)-1]
+"""
 
-directorio = 'C:/Compilador/HandTech/src/Test/'
-archivo = buscarFicheros(directorio)
-test = directorio+archivo
-fp = codecs.open(test,"r","UTF-8")
-cadena = fp.read()
-fp.close()
+# Pasar el código al analizador léxico
+lexer.input(codigo)
 
-analizador = lex.lex()
-
-analizador.input(cadena)
-
-while True:
-    tok = analizador.token()
-    if not tok : break
+# Tokenizar e imprimir los tokens
+for tok in lexer:
     print(tok)
