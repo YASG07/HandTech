@@ -1,5 +1,5 @@
-#caché generado al ejecutar el programa
-/_pycache_
+#caché generado al ejecutar cualquier programa
+__pycache__
 
 #editor de directorios y archivos
 .idea

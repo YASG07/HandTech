@@ -1,4 +1,4 @@
-# HandTech
+# HandTech (.ht)
 
 
 ### Equipo 1-Los Tilapios:
@@ -11,4 +11,4 @@
 
 
 ### Instrucciones:
-* Abrir una terminal en Visual (ctrl + ñ) y ejecutar el comando [[text](https://pypi.org/project/ply/)]pip install ply
+* Abrir una terminal en Visual (ctrl + ñ) y ejecutar el comando [[pip install ply](https://pypi.org/project/ply/)]
