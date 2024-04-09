@@ -116,9 +116,9 @@ reserved = {
 
 #Expresiones regulares para Tokens Simples
 t_PLUS = r'\+'
-t_INCRE = r'\++'
+#t_INCRE = r'\++' Igual a discuSION
 #t_DECRE = r'\--' Tenemos que discutir como solucionar el decremento
-#t_MINUS = r'\-'  Igual a discuSION
+t_MINUS = r'\-'  
 t_TIMES = r'\*'
 t_DIVIDE = r'/'
 t_LT = r'<'
@@ -140,6 +140,7 @@ t_LTE = r'<='
 t_GTE = r'>='
 t_AND = r'AND'
 t_NOT = r'NOT'
+#t_EQUALS = r'\+=+'
 
 
 #Ignora espacios en blanco y tabulaciones
@@ -214,12 +215,38 @@ lexer = lex.lex()
 
 codigo = """
 method run(){
-    ;Aquí mandas a llamar los métodos que llegues a crear
-    fng1 = 30$
-    <- Hola
-    como ta ->
-    AgarrarSoltar()$
-}"""
+   ;Aquí mandas a llamar los métodos que llegues a crear
+   ;fng1 = 30$
+   AgarrarSoltar()$
+}
+
+method AgarrarSoltar(){
+   sensor sn = false$
+   telefono tireloProfe = telefono$
+   if(NOT sn) then{
+      wrist.rotate(90)$ ;Cantidad de grados que rotará la muñeca
+      wait(2000)$ ;Espera una cantidad de 2 segundos
+      arm.mov(10)$ ;Cantidad de cm que se moverá la mano con respecto a X
+      wait(2000)$
+      hand.mov(tireloProfe.ancho)$ <- Cierra la mano en un valor de grados que indica el
+                                                        parámetro del objeto ->
+      sn = true$
+   } else {
+      hand.mov(-tireloProfe.ancho)$ ;Abre la mano
+      wait(2000)$
+      arm.mov(-10)$
+      wait(2000)$
+      wrist.rotate(-90)$  ;Cantidad de grados que rotará la muñeca en -X
+      sn = false$
+   }
+}
+
+mbm telefono {
+         int ancho = 15$ ;Cantidad en cm del ancho del obj
+         int alto = 27$ ;Cantidad en cm del alto del obj
+} ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
+
+"""
 # Evitar la impresión de advertencias sobre tokens no utilizados
 lex.errorlog = lex.NullLogger()
 
