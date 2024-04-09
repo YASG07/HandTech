@@ -1,7 +1,7 @@
 # imports
-
+from src.interfaz.ventanaCompilador import *
 
 def main():
-    print("running...")
+    exec()
 
 main()
