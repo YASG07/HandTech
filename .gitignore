@@ -4,3 +4,6 @@ __pycache__
 #editor de directorios y archivos
 .idea
 .vscode/*
+
+#archivo generado por la librería yacc
+parser.out
