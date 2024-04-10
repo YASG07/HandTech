@@ -1,4 +1,4 @@
-#Analizador sintáctico versión pl0(.pl0) para HandTech
+#Analizador sintáctico para HandTech (.ht)
 
 #imports
 import ply.yacc as yacc
@@ -125,7 +125,23 @@ mbm telefono {
 } ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
 
 """
-parser = yacc.yacc()
-result = parser.parse(codigo)
 
-print(result)
+#instancia del analizador sintactico
+parser = yacc.yacc()
+#vector con los resultados
+resultados = []
+
+#analisis sintactico
+def analisisSintactico(src):
+    global resultados
+    resultados.clear() #limpiamos el vector
+
+    for item in src.splitlines():
+        if item:
+            gram = parser.parse(item) #analisis de cada item 
+            if gram:
+                resultados.append(str(gram))
+        else: print("código fuente vacio")
+        return resultados
+#ejcución del método analisis sintactico    
+analisisSintactico(codigo)
