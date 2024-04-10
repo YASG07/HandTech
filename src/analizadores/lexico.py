@@ -71,6 +71,9 @@ tokens = [
     'COMENTARIOS',
     'COMENTARIOS_MULTILINEA',
     'FIN_DE_INSTRUCCION',
+    'DECRE',
+    'INCRE',
+    'EQUALS'
 ]
 
 
@@ -140,7 +143,7 @@ t_LTE = r'<='
 t_GTE = r'>='
 t_AND = r'AND'
 t_NOT = r'NOT'
-#t_EQUALS = r'\+\=\+'
+t_EQUALS = r'\+\=\+'
 
 
 #Ignora espacios en blanco y tabulaciones
@@ -231,6 +234,9 @@ method AgarrarSoltar(){
       hand.mov(tireloProfe.ancho)$ <- Cierra la mano en un valor de grados que indica el
                                                         parámetro del objeto ->
       sn = true$
+      --incremento$
+      ++incremento$
+      hola +=+ hi$
    } else {
       hand.mov(-tireloProfe.ancho)$ ;Abre la mano
       wait(2000)$
