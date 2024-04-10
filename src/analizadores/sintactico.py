@@ -2,216 +2,130 @@
 
 #imports
 import ply.yacc as yacc
-import os
-import codecs
-import re
+#import os
+#import codecs
 
 from lexico import tokens
 from sys import stdin
 
 precedence = (
     ('right','ASSIGN'),
-    ('right','UPDATE'),
     ('left','NE'),
     ('left', 'LT', 'LTE', 'GT', 'GTE'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
-    ('rigt', 'ODD'),
     ('left', 'LPARENT', 'RPARENT'),
 )
 
 #métodos para validar cada una de las gramaticas que componen el lenguaje
-def prod_program(produccion):
-    '''program = block'''
+def p_program(produccion):
+    '''
+    program : block
+    '''
     print("program")
+    #gramática base
     #produccion[0] = program(produccion[1], "program") #pendiente a terminar
 
-def prod_constDeclare(produccion):
-    '''constDeclare = CONST constAssigmentList; '''
-    print("CONST")
-    #produccion[0] = constDeclare(produccion[2]) #pendiente a terminar
+#gramatica de expresión
+def p_expression(produccion):
+    '''
+    declare : expression
+    '''
+    print("expresión")
 
-def prod_constDeclareEmpty(produccion):
-    '''constDeclare = empty'''
-    print("CONST Empty")
-    #produccion[0] = Null() #pendiente a terminar
+#gramatica de asignación
+def p_assign(produccion):
+    '''
+    declare : ID ASSIGN expression FIN_DE_INSTRUCCION 
+    '''
+    print("asignación")
 
-def prod_constAssignmentList1(produccion):
-    '''constAssigmentList : ID = NUMBER'''
-    print("constAssigmentList 1")
+#gramatica de operaciones aritmeticas
+def p_operations(produccion):
+    '''
+    expression : expression PLUS expression
+                |   expression MINUS expression
+                |   expression TIMES expression
+                |   expression DIVIDE expression
+                |   ID INCRE
+                |   ID DECRE 
+    '''
+    print("operaciones")
 
-def prod_constAssignmentList2(produccion):
-    '''constAssignmentList : constAssigmentList, ID = NUMBER'''
-    print("constAssigmentList 2")
+#gramatica de agrupacion
+def p_agrupacion(produccion):
+    '''
+    expression : LPARENT expression RPARENT
+                |   LKEY expression RKEY
+                |   SBLKEY expression SBRKEY
+    '''
+    print("agrupacion")
 
-def prod_varDeclare1(produccion):
-    '''varDeclare : VAR ID'''
-    print("varDeclare")
+#gramatica de operaciones logicas
+def p_logicas(produccion):
+    '''
+    expression : expression LT expression
+                |   expression GT expression
+                |   expression LTE expression
+                |   expression GTE expression
+                |   expression NE expression
+                |   LPARENT expression RPARENT LT LPARENT expression RPARENT
+                |   LPARENT expression RPARENT GT LPARENT expression RPARENT
+                |   LPARENT expression RPARENT GTE LPARENT expression RPARENT
+                |   LPARENT expression RPARENT LTE LPARENT expression RPARENT
+                |   LPARENT expression RPARENT NE LPARENT expression RPARENT
+    '''
+    print("logicas")
 
-def prod_varDeclareEmpty(produccion):
-    '''varDeclare : empty'''
-    print("varDeclare nulo")
+#gramatica para expresiones booleanas
+def p_booleanos(produccion):
+    '''
+    expression : expression AND expression
+                |   NOT expression
+                |   LPARENT expression RPARENT AND LPARENT expression RPARENT
+                |   NOT LPARENT expression RPARENT
+    '''
+    print("booleanos")
 
-def prod_identList1(produccion):
-    '''identList : ID'''
-    print("identList 1")
-
-def prod_identList2(produccion):
-    '''identList : identList, ID'''
-    print("identList 2")
-
-def prod_procDeclare1(produccion):
-    '''procDeclare : procDeclare PROCEDURE ID ; block ;'''
-    print("procDeclare 1")
-
-def prod_procDeclareEmpty(produccion):
-    '''procDeclare : empty'''
-    print("procDeclare nulo")
-
-def prod_statement1(produccion):
-    '''statement : ID UPDATE expression'''
-    print("statement 1")
-
-def prod_statement2(produccion):
-    '''statement : CALL ID'''
-    print("statement 2")
-
-def prod_statement3(produccion):
-    '''statement : BEGIN statementList END'''
-    print("statement 3")
-
-def prod_statement4(produccion):
-    '''statement : IF condition THEN statement'''
-    print("statement 4")
-
-def prod_statement5(produccion):
-    '''statement : WHILE condition DO statement'''
-    print("statement 5")
-
-def prod_statementEmpty(produccion):
-    '''statement : empty'''
-    print("statement nulo")
-
-def prod_statementList1(produccion):
-    '''statementList : statement'''
-    print("statementList 1")
-
-def prod_statementList2(produccion):
-    '''statementList : statementList ; statement'''
-    print("statementList 2")
-
-def prod_condition1(produccion):
-    '''condition : ODD expression'''
-    print("condition 1")
-
-def prod_condition2(produccion):
-    '''condition : expression relation expression'''
-    print("condition 2")
-
-def prod_relation1(produccion):
-    '''relation : ASSIGN'''
-    print("relation 1")
-
-def prod_relation2(produccion):
-    '''relation : NE'''
-    print("relation 2")
-
-def prod_relation3(produccion):
-    '''relation : LT'''
-    print("relation 3")
-
-def prod_relation4(produccion):
-    '''relation : GT'''
-    print("relation 4")
-
-def prod_relation5(produccion):
-    '''relation : LTE'''
-    print("relation 5")
-
-def prod_relation6(produccion):
-    '''relation : GTE'''
-    print("relation 6")
-
-def prod_expression1(produccion):
-    '''expression : term'''
-    print("expression 1")
-
-def prod_expression2(produccion):
-    '''expression : addingOperator term'''
-    print("expression 2")
-
-def prod_expression3(produccion):
-    '''expression : expression addingOperator term'''
-    print("expression 3")
-
-def prod_term1(produccion):
-    '''term : factor'''
-    print("term 1")
-
-def prod_term1(produccion):
-    '''term : term multiplyingOperator factor'''
-    print("term 1")
-
-def prod_multiplyingOperator1(produccion):
-    '''multiplyingOperator : TIMES'''
-    print("multiplyingOperator 1")
-
-def prod_multiplyingOperator2(produccion):
-    '''multiplyingOperator : DIVIDE'''
-    print("multiplyingOperator2")
-
-def prod_factor1(produccion):
-    '''factor : ID'''
-    print("factor 1")
-
-def prod_factor2(produccion):
-    '''factor : NUMBER'''
-    print("factor 2")
-
-def prod_factor3(produccion):
-    '''factor : LPARENT expression RPARENT'''
-    print("prod_factor3")
-
-def prod_empty(produccion):
-    '''empty :'''
-    pass
-
-def prod_error(produccion):
+def p_error(produccion):
     print("error de sintaxis ",produccion)
     print("error detectado en la línea: "+str(produccion.lineno))
 
-def buscarFicheros(directorio):
-    ficheros = []
-    numArchivo = ''
-    respuesta = False
-    cont = 1
+codigo = """
+method run(){
+   ;Aquí mandas a llamar los métodos que llegues a crear
+   ;fng1 = 30$
+   AgarrarSoltar()$
+}
 
-    for base, dirs, files in os.walk(directorio):
-        ficheros.append(files)
-    
-    for file in files:
-        print(str(cont) + ". "+file)
-        cont = cont + 1
+method AgarrarSoltar(){
+   sensor sn = false$
+   telefono tireloProfe = telefono$
+   if(NOT sn) then{
+      wrist.rotate(90)$ ;Cantidad de grados que rotará la muñeca
+      wait(2000)$ ;Espera una cantidad de 2 segundos
+      arm.mov(10)$ ;Cantidad de cm que se moverá la mano con respecto a X
+      wait(2000)$
+      hand.mov(tireloProfe.ancho)$ <- Cierra la mano en un valor de grados que indica el
+                                                        parámetro del objeto ->
+      sn = true$
+   } else {
+      hand.mov(-tireloProfe.ancho)$ ;Abre la mano
+      wait(2000)$
+      arm.mov(-10)$
+      wait(2000)$
+      wrist.rotate(-90)$  ;Cantidad de grados que rotará la muñeca en -X
+      sn = false$
+   }
+}
 
-    while respuesta == False:
-        numArchivo = input('\nNúmero del test: ')
-        for file in files:
-            if file == files[int(numArchivo)-1]:
-                respuesta = True
-                break
-    print("Has escogido \"%s\" \n" %files[int(numArchivo)-1])
-    return files[int(numArchivo) - 1]
+mbm telefono {
+         int ancho = 15$ ;Cantidad en cm del ancho del obj
+         int alto = 27$ ;Cantidad en cm del alto del obj
+} ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
 
-#directorio LOCAL del archivo de pruebas
-directorio = '/Users/Lenovo/Documents/TEC/Len. & Aut I/HandTech/src/Test/' 
-archivo = buscarFicheros(directorio)
-test = directorio + archivo
-fp = codecs.open(test, "r", "utf-8")
-codigo = fp.read()
-fp.close()
-
+"""
 parser = yacc.yacc()
 result = parser.parse(codigo)
 
 print(result)
-#Retomar vídeo analizador sintactico en python minuto - 41:52
