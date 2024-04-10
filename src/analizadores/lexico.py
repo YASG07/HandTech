@@ -1,10 +1,10 @@
 #imports
 
 import ply.lex as lex
-import re
-import codecs
-import os
-import sys
+#import re
+#import codecs
+#import os
+#import sys
 
 tokens = [
     'if',
@@ -116,8 +116,8 @@ reserved = {
 
 #Expresiones regulares para Tokens Simples
 t_PLUS = r'\+'
-#t_INCRE = r'\++' Igual a discuSION
-#t_DECRE = r'\--' Tenemos que discutir como solucionar el decremento
+t_INCRE = r'\+\+' #Igual a discuSION
+t_DECRE = r'\-\-' #Tenemos que discutir como solucionar el decremento
 t_MINUS = r'\-'  
 t_TIMES = r'\*'
 t_DIVIDE = r'/'
@@ -140,7 +140,7 @@ t_LTE = r'<='
 t_GTE = r'>='
 t_AND = r'AND'
 t_NOT = r'NOT'
-#t_EQUALS = r'\+=+'
+#t_EQUALS = r'\+\=\+'
 
 
 #Ignora espacios en blanco y tabulaciones
@@ -256,4 +256,3 @@ lexer.input(codigo)
 # Tokenizar e imprimir los tokens
 for tok in lexer:
     print(tok)  
-
