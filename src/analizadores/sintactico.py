@@ -18,30 +18,69 @@ precedence = (
 )
 
 #métodos para validar cada una de las gramaticas que componen el lenguaje
-def p_program(produccion):
+#gramática base
+def p_programa(produccion):
     '''
-    program : block
+    program : section
     '''
-    print("program")
-    #gramática base
+    print("programa")
     #produccion[0] = program(produccion[1], "program") #pendiente a terminar
 
 #gramatica de expresión
-def p_expression(produccion):
+def p_expresion(produccion):
     '''
-    declare : expression
+    expression : ID
+                |   NUMBER
+                |   DECIMAL
+                |   BOOL      
     '''
     print("expresión")
 
-#gramatica de asignación
-def p_assign(produccion):
+#gramatica para método principal
+def p_run(produccion):
     '''
-    declare : ID ASSIGN expression FIN_DE_INSTRUCCION 
+    section : method run LPARENT expression RPARENT LKEY section RKEY
+    '''
+    print("método principal")
+
+#gramatica para métodos
+def p_metodo(produccion):
+    '''
+    section : method ID LPARENT expression RPARENT
+    '''
+    print("metodo")
+
+#gramatica para objetos
+def p_objetos(produccion):
+    '''
+    section : mbm ID LKEY section RKEY
+    '''
+    print("objeto")
+
+#gramatica para comentarios
+def p_comentarios(produccion):
+    '''
+    expression : COMENTARIOS expression
+                |   COMENTARIOS_MULTILINEA expression COMENTARIOS_MULTILINEA
+    '''
+    print("comentario")
+
+#gramatica para declarar variables
+def p_declararacion(produccion):
+    '''
+    declare : degree ID ASSIGN DECIMAL FIN_DE_INSTRUCCION
+    '''
+    print("declaración")
+
+#gramatica de asignación
+def p_asignar(produccion):
+    '''
+    expression : ID ASSIGN expression FIN_DE_INSTRUCCION 
     '''
     print("asignación")
 
 #gramatica de operaciones aritmeticas
-def p_operations(produccion):
+def p_operaciones(produccion):
     '''
     expression : expression PLUS expression
                 |   expression MINUS expression
@@ -88,10 +127,32 @@ def p_booleanos(produccion):
     print("booleanos")
 
 def p_error(produccion):
-    print("error de sintaxis ",produccion)
-    print("error detectado en la línea: "+str(produccion.lineno))
+    if produccion:
+        print(f"Error sintactico: '{produccion.value}', en línea '{produccion.lineno}'")
+    else:
+        print("Error sintactico: expresión indefinida")
 
-codigo = """
+#cargar código desde un archivo
+file = open("test/test.ht")#abrir el archivo toma como base la dirección del programa ejecutandose
+codigo = file.read()#cargar el contenido en una variable
+file.close()#cierra el archivo
+
+#instancia del analizador sintactico
+parser = yacc.yacc()
+
+#Evitar la impresión de advertencias de token no utilizado
+yacc.errorlog = yacc.NullLogger()
+
+#método para probar el código
+def analisisSintactico(src):
+    resultado = parser.parse(src)
+    print(resultado)
+
+analisisSintactico(codigo)
+
+"""
+código ejemplo para pruebas (esto funciona como comentarios multilinea en python)
+archivo test.ht -> HandTech/src/analizadores/test
 method run(){
    ;Aquí mandas a llamar los métodos que llegues a crear
    ;fng1 = 30$
@@ -123,25 +184,4 @@ mbm telefono {
          int ancho = 15$ ;Cantidad en cm del ancho del obj
          int alto = 27$ ;Cantidad en cm del alto del obj
 } ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
-
 """
-
-#instancia del analizador sintactico
-parser = yacc.yacc()
-#vector con los resultados
-resultados = []
-
-#analisis sintactico
-def analisisSintactico(src):
-    global resultados
-    resultados.clear() #limpiamos el vector
-
-    for item in src.splitlines():
-        if item:
-            gram = parser.parse(item) #analisis de cada item 
-            if gram:
-                resultados.append(str(gram))
-        else: print("código fuente vacio")
-        return resultados
-#ejcución del método analisis sintactico    
-analisisSintactico(codigo)
