@@ -265,3 +265,55 @@ lexer.input(codigo)
 # Tokenizar e imprimir los tokens
 for tok in lexer:
     print(tok)  
+
+
+#Hacer caso omiso son prueblas locas que se me ocurren
+"""class TablaSimbolos:
+    def __init__(self):
+        self.simbolos = {}
+
+    def agregar_simbolo(self, nombre, tipo, valor):
+        if nombre in self.simbolos:
+            print(f"Error: El símbolo {nombre} ya está definido en la tabla de símbolos.")
+        else:
+            self.simbolos[nombre] = {'tipo': tipo, 'valor': valor}
+
+    def obtener_tipo(self, nombre):
+        if nombre in self.simbolos:
+            return self.simbolos[nombre]['tipo']
+        else:
+            print(f"Error: El símbolo {nombre} no está definido en la tabla de símbolos.")
+            return None
+
+    def obtener_valor(self, nombre):
+        if nombre in self.simbolos:
+            return self.simbolos[nombre]['valor']
+        else:
+            print(f"Error: El símbolo {nombre} no está definido en la tabla de símbolos.")
+            return None
+
+# Crear la tabla de símbolos
+tabla = TablaSimbolos()
+
+# Pasar el código al analizador léxico
+lexer.input(codigo)
+
+# Tokenizar y agregar los tokens a la tabla de símbolos
+for tok in lexer:
+    if tok.type == 'ID':
+        tabla.agregar_simbolo(tok.value, 'ID', None)
+    elif tok.type == 'NUMBER':
+        tabla.agregar_simbolo(tok.value, 'NUMBER', tok.value)
+    elif tok.type == 'DECIMAL':
+        tabla.agregar_simbolo(tok.value, 'DECIMAL', tok.value)
+    elif tok.type == 'BOOL':
+        tabla.agregar_simbolo(tok.value, 'BOOL', tok.value)
+    elif tok.type in reserved.values():
+        tabla.agregar_simbolo(tok.value, 'RESERVED', tok.value)
+    else:
+        tabla.agregar_simbolo(tok.value, 'OPERATOR', tok.value)
+
+# Imprimir la tabla de símbolos
+print("Tabla de Símbolos:")
+for simbolo, info in tabla.simbolos.items():
+    print(f"Símbolo: {simbolo}, Tipo: {info['tipo']}, Valor: {info['valor']}")"""
