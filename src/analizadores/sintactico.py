@@ -2,11 +2,8 @@
 
 #imports
 import ply.yacc as yacc
-#import os
-#import codecs
 
 from lexico import tokens
-from sys import stdin
 
 precedence = (
     ('right','ASSIGN'),
@@ -18,124 +15,99 @@ precedence = (
 )
 
 #métodos para validar cada una de las gramaticas que componen el lenguaje
-#gramática base
-def p_programa(produccion):
-    '''
-    program : section
-    '''
-    print("programa")
-    #produccion[0] = program(produccion[1], "program") #pendiente a terminar
 
-#gramatica de expresión
-def p_expresion(produccion):
+#gramatica para método principal
+def p_main(produccion):
+    print("main")
+
+#bloque de código
+def p_bloque(produccion):
+    print("bloque")
+    
+#expression
+def p_expression(produccion):
     '''
-    expression : ID
-                |   NUMBER
-                |   DECIMAL
-                |   BOOL      
+    expression : operacionA
+                | operacionL
+                | ID 
+                | NUMBER 
+                | BOOL 
+                | DECIMAL 
     '''
     print("expresión")
 
-#gramatica para método principal
-def p_run(produccion):
+#operadores aritmeticas
+def p_operadoresAritmeticos(produccion):
     '''
-    section : method run LPARENT expression RPARENT LKEY section RKEY
+    operadorA : PLUS 
+                | MINUS 
+                | TIMES 
+                | DIVIDE
     '''
-    print("método principal")
+    print("operadores aritmeticos")
 
-#gramatica para métodos
-def p_metodo(produccion):
+#operadores logicas
+def p_operadoresLogicos(produccion):
     '''
-    section : method ID LPARENT expression RPARENT
+    operadorL : GT 
+                | LT 
+                | GTE 
+                | LTE 
+                | EQUALS 
+                | NE
     '''
-    print("metodo")
+    print("operadores logicos")
+
+#operaciones aritmeticas
+def p_operacionesAritmeticas(produccion):
+    '''
+    operacionA : expression operadorA expression 
+               | LPARENT expression operadorA expression RPARENT
+    '''
+    print("operacion anchorage (aritmetica)")
+
+#operaciones lógicas
+def p_operacionesLogicas(produccion):
+    '''
+    operacionL : expression operadorL expression
+               | LPARENT expression operadorL expression RPARENT
+               | expression operadorL expression AND expression operadorL expression
+               | NOT operacionL
+    '''
+    print("operaciones lógicas")
+
+#instrucciones
+
+#tipos de dato
+def p_tipoDato(proudccion):
+    '''
+    tipo : degree 
+                | int 
+                | float 
+                | bool
+    '''
+    print("tipo de dato")
+
+#gramatica para ciclos
+
+#gramatica para condicionales
 
 #gramatica para objetos
-def p_objetos(produccion):
-    '''
-    section : mbm ID LKEY section RKEY
-    '''
-    print("objeto")
 
-#gramatica para comentarios
-def p_comentarios(produccion):
-    '''
-    expression : COMENTARIOS expression
-                |   COMENTARIOS_MULTILINEA expression COMENTARIOS_MULTILINEA
-    '''
-    print("comentario")
+#gramatica para metodos
 
-#gramatica para declarar variables
-def p_declararacion(produccion):
-    '''
-    declare : degree ID ASSIGN DECIMAL FIN_DE_INSTRUCCION
-    '''
-    print("declaración")
-
-#gramatica de asignación
-def p_asignar(produccion):
-    '''
-    expression : ID ASSIGN expression FIN_DE_INSTRUCCION 
-    '''
-    print("asignación")
-
-#gramatica de operaciones aritmeticas
-def p_operaciones(produccion):
-    '''
-    expression : expression PLUS expression
-                |   expression MINUS expression
-                |   expression TIMES expression
-                |   expression DIVIDE expression
-                |   ID INCRE
-                |   ID DECRE 
-    '''
-    print("operaciones")
-
-#gramatica de agrupacion
-def p_agrupacion(produccion):
-    '''
-    expression : LPARENT expression RPARENT
-                |   LKEY expression RKEY
-                |   SBLKEY expression SBRKEY
-    '''
-    print("agrupacion")
-
-#gramatica de operaciones logicas
-def p_logicas(produccion):
-    '''
-    expression : expression LT expression
-                |   expression GT expression
-                |   expression LTE expression
-                |   expression GTE expression
-                |   expression NE expression
-                |   LPARENT expression RPARENT LT LPARENT expression RPARENT
-                |   LPARENT expression RPARENT GT LPARENT expression RPARENT
-                |   LPARENT expression RPARENT GTE LPARENT expression RPARENT
-                |   LPARENT expression RPARENT LTE LPARENT expression RPARENT
-                |   LPARENT expression RPARENT NE LPARENT expression RPARENT
-    '''
-    print("logicas")
-
-#gramatica para expresiones booleanas
-def p_booleanos(produccion):
-    '''
-    expression : expression AND expression
-                |   NOT expression
-                |   LPARENT expression RPARENT AND LPARENT expression RPARENT
-                |   NOT LPARENT expression RPARENT
-    '''
-    print("booleanos")
-
+#método para devolver errores
 def p_error(produccion):
     if produccion:
         print(f"Error sintactico: '{produccion.value}', en línea '{produccion.lineno}'")
     else:
         print("Error sintactico: expresión indefinida")
+#endregion
 
-#cargar código desde un archivo
-file = open("test/test.ht")#abrir el archivo toma como base la dirección del programa ejecutandose
+#leer código desde un archivo
+file = open("test/test.ht")#toma como base la dirección del programa ejecutandose
 codigo = file.read()#cargar el contenido en una variable
-file.close()#cierra el archivo
+file.close()
 
 #instancia del analizador sintactico
 parser = yacc.yacc()
