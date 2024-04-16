@@ -72,8 +72,9 @@ tokens = [
     'COMENTARIOS_MULTILINEA',
     'FIN_DE_INSTRUCCION',
     'DECRE',
-    'INCRE',
-    'EQUALS'
+    'EQUALS',
+    'false',
+    'true',
 ]
 
 
@@ -114,6 +115,8 @@ reserved = {
     'piRad': 'piRad',
     'degree': 'degree',
     'wait': 'wait',
+    'false':'false',
+    'true':'true',
 }
 
 
