@@ -15,21 +15,37 @@ precedence = (
 )
 
 #métodos para validar cada una de las gramaticas que componen el lenguaje
-
+#gramatica base
+def p_programa(produccion):
+    '''
+    programa : main
+             | objeto
+             | main objeto
+             | programa funcion
+    '''
 #gramatica para método principal
 def p_main(produccion):
+    '''
+    main : method run LPARENT RPARENT LKEY bloque RKEY
+    '''
     print("main")
 
 #bloque de código
 def p_bloque(produccion):
+    '''
+    bloque : expression 
+           | bloque expression
+           | asignacion
+           | bloque asignacion
+           | bloque ciclo
+           | bloque condicion
+    '''
     print("bloque")
     
 #expression
 def p_expression(produccion):
     '''
-    expression : operacionA
-                | operacionL
-                | ID 
+    expression : ID 
                 | NUMBER 
                 | BOOL 
                 | DECIMAL 
@@ -62,7 +78,9 @@ def p_operadoresLogicos(produccion):
 def p_operacionesAritmeticas(produccion):
     '''
     operacionA : expression operadorA expression 
-               | LPARENT expression operadorA expression RPARENT
+               | LPARENT operacionA RPARENT
+               | ID INCRE
+               | ID DECRE
     '''
     print("operacion anchorage (aritmetica)")
 
@@ -71,30 +89,65 @@ def p_operacionesLogicas(produccion):
     '''
     operacionL : expression operadorL expression
                | LPARENT expression operadorL expression RPARENT
-               | expression operadorL expression AND expression operadorL expression
+               | operacionL AND operacionL
                | NOT operacionL
     '''
     print("operaciones lógicas")
 
 #instrucciones
 
+
+#asignacion
+def p_asignacion(produccion):
+    '''
+    asignacion : tipo ID ASSIGN expression FIN_DE_INSTRUCCION
+               | tipo ID FIN_DE_INSTRUCCION
+               | ID ASSIGN expression FIN_DE_INSTRUCCION
+    '''
+    print("asignación")
+
 #tipos de dato
 def p_tipoDato(proudccion):
     '''
     tipo : degree 
-                | int 
-                | float 
-                | bool
+         | int 
+         | float 
+         | bool
     '''
     print("tipo de dato")
 
 #gramatica para ciclos
-
+def p_ciclos(produccion):
+    '''
+    ciclo : while LPARENT operacionL RPARENT LKEY bloque RKEY
+          | for LPARENT asignacion TWPOINT operacionL TWPOINT operacionA RPARENT LKEY bloque RKEY
+          | for LPARENT asignacion TWPOINT operacionL TWPOINT RPARENT LKEY bloque RKEY
+          | for LPARENT TWPOINT operacionL TWPOINT operacionA RPARENT LKEY bloque RKEY
+          | for LPARENT TWPOINT operacionL TWPOINT RPARENT LKEY bloque RKEY
+    '''
 #gramatica para condicionales
+def p_condicion(produccion):
+    '''
+    condicion : if LPARENT operacionL RPARENT then LKEY bloque RKEY
+              | if LPARENT operacionL RPARENT then bloque else LKEY bloque RKEY
+    '''
+    print("condición")
 
 #gramatica para objetos
+def p_objetos(produccion):
+    '''
+    objeto : mbm ID LKEY bloque RKEY
+           | mbm ID LKEY bloque funcion RKEY
+    '''
+    print("objetos (clases)")
 
 #gramatica para metodos
+def p_metodos(produccion):
+    '''
+    funcion : method ID LPARENT RPARENT LKEY bloque RKEY
+            | method ID LPARENT tipo ID RPARENT LKEY bloque RKEY
+    '''
+    print("métodos")
 
 #método para devolver errores
 def p_error(produccion):
@@ -102,7 +155,7 @@ def p_error(produccion):
         print(f"Error sintactico: '{produccion.value}', en línea '{produccion.lineno}'")
     else:
         print("Error sintactico: expresión indefinida")
-#endregion
+#endregion métodos para gramaticas
 
 #leer código desde un archivo
 file = open("test/test.ht")#toma como base la dirección del programa ejecutandose
