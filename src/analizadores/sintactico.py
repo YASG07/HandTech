@@ -23,6 +23,8 @@ def p_programa(produccion):
              | main objeto
              | programa funcion
     '''
+    print("programa fuente")
+    
 #gramatica para método principal
 def p_main(produccion):
     '''
@@ -33,11 +35,13 @@ def p_main(produccion):
 #bloque de código
 def p_bloque(produccion):
     '''
-    bloque : expression 
-           | bloque expression
+    bloque : instruccion 
+           | bloque instruccion
            | asignacion
            | bloque asignacion
+           | ciclo
            | bloque ciclo
+           | condicion
            | bloque condicion
     '''
     print("bloque")
@@ -49,6 +53,7 @@ def p_expression(produccion):
                 | NUMBER 
                 | BOOL 
                 | DECIMAL 
+                | ID DOT ID
     '''
     print("expresión")
 
@@ -88,14 +93,42 @@ def p_operacionesAritmeticas(produccion):
 def p_operacionesLogicas(produccion):
     '''
     operacionL : expression operadorL expression
-               | LPARENT expression operadorL expression RPARENT
+               | LPARENT operacionL RPARENT
                | operacionL AND operacionL
                | NOT operacionL
+               | parte DOT is LPARENT up RPARENT
+               | parte DOT is LPARENT down RPARENT
+               | parte DOT is LPARENT block RPARENT
     '''
     print("operaciones lógicas")
 
+#partes de la mano
+def p_partesMano(produccion):
+    '''
+    parte : fng1
+          | fng2
+          | fng3
+          | fng4
+          | fng5
+          | arm
+          | hand
+          | linkage
+    '''
+    print("parte de la mano")
+    
 #instrucciones
-
+def p_instruccion(produccion):
+    '''
+    instruccion : parte DOT mov LPARENT expression RPARENT FIN_DE_INSTRUCCION
+                | parte DOT mov LPARENT expression COMMA expression RPARENT FIN_DE_INSTRUCCION
+                | parte DOT force LPARENT expression RPARENT FIN_DE_INSTRUCCION
+                | wrist DOT rotate LPARENT expression RPARENT FIN_DE_INSTRUCCION
+                | wait LPARENT expression RPARENT FIN_DE_INSTRUCCION
+                | parte DOT stop LPARENT RPARENT FIN_DE_INSTRUCCION
+                | return FIN_DE_INSTRUCCION
+                | return expression FIN_DE_INSTRUCCION 
+    '''
+    print("instruccion")
 
 #asignacion
 def p_asignacion(produccion):
@@ -103,6 +136,10 @@ def p_asignacion(produccion):
     asignacion : tipo ID ASSIGN expression FIN_DE_INSTRUCCION
                | tipo ID FIN_DE_INSTRUCCION
                | ID ASSIGN expression FIN_DE_INSTRUCCION
+               | bool ID ASSIGN false FIN_DE_INSTRUCCION
+               | bool ID ASSIGN true FIN_DE_INSTRUCCION
+               | ID ASSIGN false FIN_DE_INSTRUCCION
+               | ID ASSIGN true FIN_DE_INSTRUCCION
     '''
     print("asignación")
 
@@ -113,6 +150,7 @@ def p_tipoDato(proudccion):
          | int 
          | float 
          | bool
+         | sensor
     '''
     print("tipo de dato")
 
@@ -125,6 +163,8 @@ def p_ciclos(produccion):
           | for LPARENT TWPOINT operacionL TWPOINT operacionA RPARENT LKEY bloque RKEY
           | for LPARENT TWPOINT operacionL TWPOINT RPARENT LKEY bloque RKEY
     '''
+    print("ciclo")
+
 #gramatica para condicionales
 def p_condicion(produccion):
     '''
@@ -138,6 +178,7 @@ def p_objetos(produccion):
     '''
     objeto : mbm ID LKEY bloque RKEY
            | mbm ID LKEY bloque funcion RKEY
+           | export ASSIGN objeto
     '''
     print("objetos (clases)")
 
@@ -174,39 +215,3 @@ def analisisSintactico(src):
     print(resultado)
 
 analisisSintactico(codigo)
-
-"""
-código ejemplo para pruebas (esto funciona como comentarios multilinea en python)
-archivo test.ht -> HandTech/src/analizadores/test
-method run(){
-   ;Aquí mandas a llamar los métodos que llegues a crear
-   ;fng1 = 30$
-   AgarrarSoltar()$
-}
-
-method AgarrarSoltar(){
-   sensor sn = false$
-   telefono tireloProfe = telefono$
-   if(NOT sn) then{
-      wrist.rotate(90)$ ;Cantidad de grados que rotará la muñeca
-      wait(2000)$ ;Espera una cantidad de 2 segundos
-      arm.mov(10)$ ;Cantidad de cm que se moverá la mano con respecto a X
-      wait(2000)$
-      hand.mov(tireloProfe.ancho)$ <- Cierra la mano en un valor de grados que indica el
-                                                        parámetro del objeto ->
-      sn = true$
-   } else {
-      hand.mov(-tireloProfe.ancho)$ ;Abre la mano
-      wait(2000)$
-      arm.mov(-10)$
-      wait(2000)$
-      wrist.rotate(-90)$  ;Cantidad de grados que rotará la muñeca en -X
-      sn = false$
-   }
-}
-
-mbm telefono {
-         int ancho = 15$ ;Cantidad en cm del ancho del obj
-         int alto = 27$ ;Cantidad en cm del alto del obj
-} ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
-"""
