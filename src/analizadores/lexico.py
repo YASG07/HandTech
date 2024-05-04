@@ -1,10 +1,4 @@
-#imports
-
 import ply.lex as lex
-#import re
-#import codecs
-#import os
-#import sys
 
 tokens = [
     'if',
@@ -75,11 +69,13 @@ tokens = [
     'EQUALS',
     'false',
     'true',
+    'int',
+    'float',
+    'bool',
+    'none',
+    'empty'
 ]
 
-
-#Se Reestructuro el código de t_ID para evitar el uso de if-else
-#Se utiliza un diccionario de terminos para facilitar el creciemiento de las palabras reservadas.
 reserved = {
     'if': 'if',
     'then': 'then',
@@ -117,13 +113,24 @@ reserved = {
     'wait': 'wait',
     'false':'false',
     'true':'true',
+    'int':'int',
+    'float':'float',
+    'bool':'bool',
+    'none':'none',
+    'empty':'empty',
 }
 
+# Diccionario de descripciones para palabras reservadas
+descriptions = {
+    'if': 'Condición de control para la ejecución condicional de instrucciones',
+    'then': 'Indica el bloque de instrucciones que se ejecutará si la condición del if es verdadera',
+    'else': 'Indica el bloque de instrucciones que se ejecutará si la condición del if es falsa',
+    # Aquí puedes agregar más descripciones para otras palabras reservadas
+}
 
-#Expresiones regulares para Tokens Simples
 t_PLUS = r'\+'
-t_INCRE = r'\+\+' #Igual a discuSION
-t_DECRE = r'\-\-' #Tenemos que discutir como solucionar el decremento
+t_INCRE = r'\+\+'
+t_DECRE = r'\-\-'
 t_MINUS = r'\-'  
 t_TIMES = r'\*'
 t_DIVIDE = r'/'
@@ -139,7 +146,6 @@ t_SEMICOLON = r';'
 t_TWPOINT = r':'
 t_COMMA = r','
 t_DOT = r'\.'
-#Expresiones regulares para operadores de comparación y lógicos
 t_NE = r'<>'
 t_ASSIGN = r'='
 t_LTE = r'<='
@@ -148,81 +154,54 @@ t_AND = r'AND'
 t_NOT = r'NOT'
 t_EQUALS = r'\+\=\+'
 
-
-#Ignora espacios en blanco y tabulaciones
 t_ignore = ' \t'
+t_ignore_NEWLINE = r'\n'
 
-#Expresión Regular para Números decimales
 def t_DECIMAL(t):
     r'\d+\.\d+'
     t.value = float(t.value)
     return t
 
-#Expresión Regular para Números Enteros
 def t_NUMBER(t):
     r'\d+'
     t.value = int(t.value)
     return t
 
-#Expresión Regular para Booleanos
 def t_BOOL(t):
     r'[Vv]alor|[Ff]also'
     t.value = True if t.value.lower() == 'valor' else False
     return t
 
-#Expresión Regular para identificadores (nombres de variables, funciones, etc.).
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = reserved.get(t.value, 'ID')
+    if t.type != 'ID':
+        t.value = (t.value, descriptions.get(t.value, ''))
     return t
 
-
-# Lista para almacenar los comentarios junto con su posición de inicio
-comments = []
-
-#Expresión Regular para comentarios
 def t_COMENTARIOS(t):
     r'\;.*'
-    comments.append((t.value, t.lexer.lineno, t.lexpos))
     return t
 
-# Lista para almacenar los comentarios junto con su posición de inicio
-commentsML = []
-#Expresión regular para comentarios de multiple linea
 def t_COMENTARIOS_MULTILINEA(t):
-    r'<\-(?:[^-]|-(?!>))*\->'  # Comentarios de múltiples líneas entre <- y ->
-    t.lexer.lineno += t.value.count('\n')
-    commentsML.append((t.value, t.lexer.lineno, t.lexpos))
+    r'<\-(?:[^-]|-(?!>))*\->'
     return t
 
-#Expresión para ignorar saltos de linea
-t_ignore_NEWLINE = r'\n'
-
-#Expresión para actualiar la linea
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += len(t.value)
-
-#Expresión Regular para fin de linea
 def t_FIN_DE_INSTRUCCION(t):
     r'\$'
     return t
 
-# Manejo de errores
 def t_error(t):
     print(f"Illegal character '{t.value[0]}' at line {t.lexer.lineno} at column {t.lexpos}")
     t.lexer.skip(1)
 
-# Evitar la impresión de advertencias sobre tokens no utilizados
-lex.errorlog = lex.NullLogger()
-
-# Construcción del analizador léxico
 lexer = lex.lex()
 
 codigo = """
 method run(){
    ;Aquí mandas a llamar los métodos que llegues a crear
    ;fng1 = 30$
+   degree = 33$
    AgarrarSoltar()$
 }
 
@@ -251,69 +230,16 @@ method AgarrarSoltar(){
 }
 
 mbm telefono {
-         int ancho = 15$ ;Cantidad en cm del ancho del obj
-         int alto = 27$ ;Cantidad en cm del alto del obj
+    int ancho = 15$ ;Cantidad en cm del ancho del obj
+    int alto = 27$ ;Cantidad en cm del alto del obj
 } ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
 
 """
-# Evitar la impresión de advertencias sobre tokens no utilizados
-lex.errorlog = lex.NullLogger()
 
-# Pasar el código al analizador léxico
 lexer.input(codigo)
 
-# Tokenizar e imprimir los tokens
 for tok in lexer:
-    print(tok)  
-
-
-#Hacer caso omiso son prueblas locas que se me ocurren
-"""class TablaSimbolos:
-    def __init__(self):
-        self.simbolos = {}
-
-    def agregar_simbolo(self, nombre, tipo, valor):
-        if nombre in self.simbolos:
-            print(f"Error: El símbolo {nombre} ya está definido en la tabla de símbolos.")
-        else:
-            self.simbolos[nombre] = {'tipo': tipo, 'valor': valor}
-
-    def obtener_tipo(self, nombre):
-        if nombre in self.simbolos:
-            return self.simbolos[nombre]['tipo']
-        else:
-            print(f"Error: El símbolo {nombre} no está definido en la tabla de símbolos.")
-            return None
-
-    def obtener_valor(self, nombre):
-        if nombre in self.simbolos:
-            return self.simbolos[nombre]['valor']
-        else:
-            print(f"Error: El símbolo {nombre} no está definido en la tabla de símbolos.")
-            return None
-
-# Crear la tabla de símbolos
-tabla = TablaSimbolos()
-
-# Pasar el código al analizador léxico
-lexer.input(codigo)
-
-# Tokenizar y agregar los tokens a la tabla de símbolos
-for tok in lexer:
-    if tok.type == 'ID':
-        tabla.agregar_simbolo(tok.value, 'ID', None)
-    elif tok.type == 'NUMBER':
-        tabla.agregar_simbolo(tok.value, 'NUMBER', tok.value)
-    elif tok.type == 'DECIMAL':
-        tabla.agregar_simbolo(tok.value, 'DECIMAL', tok.value)
-    elif tok.type == 'BOOL':
-        tabla.agregar_simbolo(tok.value, 'BOOL', tok.value)
-    elif tok.type in reserved.values():
-        tabla.agregar_simbolo(tok.value, 'RESERVED', tok.value)
+    if isinstance(tok.value, tuple):
+        print(f"Token: {tok.type}, Valor: {tok.value[0]}, Descripción: {tok.value[1]}")
     else:
-        tabla.agregar_simbolo(tok.value, 'OPERATOR', tok.value)
-
-# Imprimir la tabla de símbolos
-print("Tabla de Símbolos:")
-for simbolo, info in tabla.simbolos.items():
-    print(f"Símbolo: {simbolo}, Tipo: {info['tipo']}, Valor: {info['valor']}")"""
+        print(f"Token: {tok.type}, Valor: {tok.value}")
