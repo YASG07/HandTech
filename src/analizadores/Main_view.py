@@ -3,7 +3,7 @@ from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox as mb
 from lexico import tokens,reserved,lexer
-from sintactico import parser
+#from sintactico import parser
 
 
 
