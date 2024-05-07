@@ -3,7 +3,7 @@ from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox as mb
 from lexico import tokens,reserved,lexer
-#from sintactico import parser
+from sintactico2 import parser, yacc
 
 
 
@@ -85,12 +85,27 @@ class ScrollTextWithLineNumbers(Frame):
         self._update_line_numbers()  # Actualiza la numeración de líneas
 
 #LISTA DE FUNCIONES EXISTENTES
-#def analisisSintactico():
- #   scrollAnalisis.config(state="normal")
-  #  scrollAnalisis.delete(1.0,END)
-
-   # resultado = parser.parse()
-   # return resultado
+def analisisSintactico():
+    cadena = scroll_text_widget.get_text()
+    if len(cadena) > 0:
+        try:
+            resultado = parser.parse(cadena)
+            mostrarAnalisisSintactico(resultado)
+        except yacc.YaccError as e:
+            print("Error durante el análisis sintáctico:", e)
+            mb.showerror("Error", str(e))
+    else:
+        mb.showwarning("ERROR", "Debes escribir código")
+        
+def mostrarAnalisisSintactico(data):
+    scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+    scrollAnalisis.delete(1.0, END)  # Borrar el contenido previo
+    if isinstance(data, (int, float)):
+        scrollAnalisis.insert(END, str(data) + '\n')
+    else:
+        for item in data:
+            scrollAnalisis.insert(END, str(item) + '\n')
+    scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición        
 
 def mostrarAnalisisLexico(tokens):
     scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
@@ -219,7 +234,7 @@ menubar.add_cascade(label="File", menu=file)
 
 analisis = Menu(menubar, tearoff=0)   
 analisis.add_command(label="Lexico",command=analisisLexico)  
-analisis.add_command(label="Sintactico")  
+analisis.add_command(label="Sintactico", command=analisisSintactico)  
 menubar.add_cascade(label="Analizar", menu=analisis)  
 
 tablas = Menu(menubar,tearoff=0)
