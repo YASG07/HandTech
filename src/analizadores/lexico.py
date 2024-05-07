@@ -118,6 +118,8 @@ reserved = {
     'bool':'bool',
     'none':'none',
     'empty':'empty',
+    'and':'and',
+    'not':'not'
 }
 
 # Diccionario de descripciones para palabras reservadas
@@ -125,7 +127,74 @@ descriptions = {
     'if': 'Condición de control para la ejecución condicional de instrucciones',
     'then': 'Indica el bloque de instrucciones que se ejecutará si la condición del if es verdadera',
     'else': 'Indica el bloque de instrucciones que se ejecutará si la condición del if es falsa',
-    # Aquí puedes agregar más descripciones para otras palabras reservadas
+    'for': 'Condicion de ciclo para la ejecucion de un bucle for',
+    'while': 'ondicion de ciclo para la ejecucion de un bucle while',
+    'stop': 'Utilizda para detener la ejecición de los ciclos',
+    'method': 'Utilizada para definir un bloque de codigo como una función o método',
+    'run': 'Indica el contenido principal del programa',
+    'return': 'Palabra reservada que nos permite devolver el valor de una función o método',
+    'console': 'Utilizada para imprimir mensajes en consola',
+    'export': 'Utilizada para exportar funcion y/o variables de un archivo a otro',
+    'import': 'Utilizada para importar arcivos o instrucciones precargadas',
+    'mbm': 'Utilizada para definir un objeto que se asemeja a una parte del cuerpo',
+    'arm': 'Utiizada para hacer referencia al brazo',
+    'hand': 'Utilizada para hacer referencia a la mano completa',
+    'rotate': 'Método utilizado para rotar la muñeca X cantidad de grados.',
+    'fng1': 'Utilizada para hacer referencia al dedo índice',
+    'fng2': 'Utilizada para hacer referencia al dedo anular',
+    'fng3': 'Utilizada para hacer referencia al dedo medio',
+    'fng4': 'Utilizada para hacer referencia al dedo meñique',
+    'fng5': 'Utilizada para hacer referencia al dedo pulgar',
+    'is': 'Utilizada para devolver el valor de una variable Booleana',
+    'mov': 'Utilizada para mover X cantidad de grados la muñeca',
+    'force': 'Utilizada para aplicar X cantidad de fuerza(libras) a un objeto',
+    'sensor': 'Palabra reservada utilizada para instancear un sensor',
+    'weight': 'Utilizada para devolver el peso de un objeto sostenido en libras',
+    'block': 'Utilizada para devolver una variable Booleana',
+    'up': 'Utilizada para levantar una parte del brazo',
+    'down': 'Utilizda para bajar una parte del brazo',
+    'linkage': 'Palabra reservada para hacer referencia a las articulaciones',
+    'wrist': 'Utilizda para hacer referencia a la muñeca',
+    'piRad': 'Palabra reservada que devuelve el valor de pi radianes',
+    'degree': 'Palabra reservada que indica cuantos grados se puede mover un componente de la protesis',
+    'wait': 'Utilizada para estabilizar el delay entre operaciones',
+    'false':'Utilizada para representar el valor booleano: falso',
+    'true':'Utilizada para representar el valor booleano: verdadero',
+    'int':'Utilizada para declarar un tipo de dato como entero',
+    'float':'Utilizada para declarar un tipo de dato como decimal',
+    'bool':'Utilizada para respresentar valores Booleanos',
+    'none':'Utilizada para representar la ausencia de valor',
+    'empty':'Utilizada para retornar un valor vacio',
+    'and':'Utilizada para usar el valor booleano AND',
+    'not':'Utilizada para usar el valor booleano NOT'
+}
+
+# Diccionario de descripciones para símbolos
+symbols_descriptions = {
+    'PLUS': 'Suma',
+    'INCRE': 'Incremento',
+    'MINUS': 'Resta',
+    'TIMES': 'Multiplicación',
+    'DIVIDE': 'División',
+    'LT': 'Menor que',
+    'GT': 'Mayor que',
+    'LPARENT': 'Paréntesis izquierdo',
+    'RPARENT': 'Paréntesis derecho',
+    'LKEY': 'Llave izquierda',
+    'RKEY': 'Llave derecha',
+    'SBLKEY': 'Corchete izquierdo',
+    'SBRKEY': 'Corchete derecho',
+    'SEMICOLON': 'Punto y coma',
+    'TWPOINT': 'Dos puntos',
+    'COMMA': 'Coma',
+    'DOT': 'Punto',
+    'NE': 'No igual',
+    'ASSIGN': 'Asignación',
+    'LTE': 'Menor o igual que',
+    'GTE': 'Mayor o igual que',
+    'AND': 'Y lógico',
+    'NOT': 'Negación lógica',
+    'EQUALS': 'Igualdad'
 }
 
 t_PLUS = r'\+'
@@ -150,8 +219,6 @@ t_NE = r'<>'
 t_ASSIGN = r'='
 t_LTE = r'<='
 t_GTE = r'>='
-t_AND = r'AND'
-t_NOT = r'NOT'
 t_EQUALS = r'\+\=\+'
 
 t_ignore = ' \t'
@@ -176,7 +243,7 @@ def t_ID(t):
     r'[a-zA-Z_][a-zA-Z0-9_]*'
     t.type = reserved.get(t.value, 'ID')
     if t.type != 'ID':
-        t.value = (t.value, descriptions.get(t.value, ''))
+        t.value = (t.value, descriptions.get(t.value, 'Palabra/Simbolo Desconocido'))
     return t
 
 def t_COMENTARIOS(t):
@@ -242,4 +309,7 @@ for tok in lexer:
     if isinstance(tok.value, tuple):
         print(f"Token: {tok.type}, Valor: {tok.value[0]}, Descripción: {tok.value[1]}")
     else:
-        print(f"Token: {tok.type}, Valor: {tok.value}")
+        if tok.type in symbols_descriptions:
+            print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
+        else:
+            print(f"Token: {tok.type}, Valor: {tok.value}")
