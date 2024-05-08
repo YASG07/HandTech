@@ -7,3 +7,4 @@ __pycache__
 
 #archivo generado por la librería yacc
 parser.out
+parsetab.py

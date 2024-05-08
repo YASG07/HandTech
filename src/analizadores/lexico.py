@@ -248,11 +248,11 @@ def t_ID(t):
 
 def t_COMENTARIOS(t):
     r'\;.*'
-    return t
+    pass
 
 def t_COMENTARIOS_MULTILINEA(t):
     r'<\-(?:[^-]|-(?!>))*\->'
-    return t
+    pass
 
 def t_FIN_DE_INSTRUCCION(t):
     r'\$'
