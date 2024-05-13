@@ -4,10 +4,15 @@ method run(){
    AgarrarSoltar(0)$
 }
 
+mbm telefono {
+         int ancho = 15$ ;Cantidad en cm del ancho del obj
+         int alto = 27$ ;Cantidad en cm del alto del obj
+} ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
+
 method AgarrarSoltar(int t){
    sensor sn = false$
    telefono tireloProfe = telefono$
-   if(NOT sn) then{
+   if(sn > 10) then{
       wrist.rotate(90)$ ;Cantidad de grados que rotará la muñeca
       wait(2000)$ ;Espera una cantidad de 2 segundos
       arm.mov(10)$ ;Cantidad de cm que se moverá la mano con respecto a X
@@ -16,16 +21,11 @@ method AgarrarSoltar(int t){
                                                         parámetro del objeto ->
       sn = true$
    } else {
-      hand.mov(-tireloProfe.ancho)$ ;Abre la mano
+      hand.mov(tireloProfe.ancho)$ ;Abre la mano
       wait(2000)$
-      arm.mov(-10)$
+      arm.mov(10)$
       wait(2000)$
-      wrist.rotate(-90)$  ;Cantidad de grados que rotará la muñeca en -X
+      wrist.rotate(90)$  ;Cantidad de grados que rotará la muñeca en -X
       sn = false$
    }
 }
-
-mbm telefono {
-         int ancho = 15$ ;Cantidad en cm del ancho del obj
-         int alto = 27$ ;Cantidad en cm del alto del obj
-} ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto

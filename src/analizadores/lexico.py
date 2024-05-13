@@ -118,8 +118,8 @@ reserved = {
     'bool':'bool',
     'none':'none',
     'empty':'empty',
-    'and':'and',
-    'not':'not'
+    'AND':'AND',
+    'NOT':'NOT'
 }
 
 # Diccionario de descripciones para palabras reservadas
@@ -165,8 +165,8 @@ descriptions = {
     'bool':'Utilizada para respresentar valores Booleanos',
     'none':'Utilizada para representar la ausencia de valor',
     'empty':'Utilizada para retornar un valor vacio',
-    'and':'Utilizada para usar el valor booleano AND',
-    'not':'Utilizada para usar el valor booleano NOT'
+    'AND': 'Y lógico',
+    'NOT': 'Negación lógica',
 }
 
 # Diccionario de descripciones para símbolos
@@ -192,8 +192,6 @@ symbols_descriptions = {
     'ASSIGN': 'Asignación',
     'LTE': 'Menor o igual que',
     'GTE': 'Mayor o igual que',
-    'AND': 'Y lógico',
-    'NOT': 'Negación lógica',
     'EQUALS': 'Igualdad'
 }
 
@@ -220,6 +218,8 @@ t_ASSIGN = r'='
 t_LTE = r'<='
 t_GTE = r'>='
 t_EQUALS = r'\+\=\+'
+t_AND = r'AND'
+t_NOT = r'NOT'
 
 t_ignore = ' \t'
 t_ignore_NEWLINE = r'\n'
@@ -275,7 +275,7 @@ method run(){
 method AgarrarSoltar(){
    sensor sn = false$
    telefono tireloProfe = telefono$
-   if(NOT sn) then{
+   if(NOT sn AND 9) then{
       wrist.rotate(90)$ ;Cantidad de grados que rotará la muñeca
       wait(2000)$ ;Espera una cantidad de 2 segundos
       arm.mov(10)$ ;Cantidad de cm que se moverá la mano con respecto a X

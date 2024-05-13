@@ -57,18 +57,25 @@ def p_bloque(prod):
 #expression
 def p_expression(prod):
     '''
-    expression : ID 
-                | NUMBER 
-                | BOOL 
-                | DECIMAL 
-                | ID DOT ID
-                | true
-                | false
+    expression : valor
+               | ID DOT ID
     '''
     if len(prod) == 4:
         prod[0] = ('expression', prod[1], prod[3])
     else:
         prod[0] = prod [1]
+
+#valores (auxiliar para expression)
+def p_valor(prod):
+    '''
+    valor : ID 
+          | NUMBER 
+          | BOOL 
+          | DECIMAL
+          | true
+          | false
+    '''
+    prod[0] = prod[1]
 
 #operadores aritmeticas
 def p_operadoresAritmeticos(prod):
@@ -108,6 +115,8 @@ def p_operacionesAritmeticas(prod):
     else:
         prod[0] = prod[1]
 
+
+
 #operaciones lógicas
 def p_operacionesLogicas(prod):
     '''
@@ -129,7 +138,7 @@ def p_operacionesLogicas(prod):
         else:
             prod[0] = ('operacionL', prod[1], prod[2], prod[3])
     elif len(prod) == 3:
-        prod[0] = prod[2]
+        prod[0] = ('Operacion_NOT', prod[2])
 
 #partes de la mano
 def p_partesMano(prod):
@@ -244,26 +253,26 @@ def p_ciclos(prod):
 def p_condicion(prod):
     '''
     condicion : if LPARENT operacionL RPARENT then LKEY bloque RKEY
-              | if LPARENT operacionL RPARENT then bloque else LKEY bloque RKEY
+              | if LPARENT operacionL RPARENT then LKEY bloque RKEY else LKEY bloque RKEY
     '''
     if len(prod) == 9:
         prod[0] = ('condicion_then', prod[3], prod[7])
     else:
-        prod[0] = ('condicion_else', prod[3], prod[7], prod[10])
+        prod[0] = ('condicion_else', prod[3], prod[7], prod[11])
 
 #gramatica para objetos
 def p_objetos(prod):
     '''
     objeto : mbm ID LKEY bloque RKEY
            | mbm ID LKEY bloque funcion RKEY
-           | export ASSIGN objeto
+           | export ASSIGN objeto FIN_DE_INSTRUCCION
     '''
     if len(prod) == 6:
         prod[0] = ('objeto', prod[2], prod[4])
     elif len(prod) == 7:
         prod[0] = ('objeto_funcion', prod[2], prod[4], prod[5])
-    elif len(prod) == 4:
-        prod[0] = ('objeto_export', prod[3])
+    elif len(prod) == 5:
+        prod[0] = ('exportacion', prod[3])
 
 #gramatica para metodos
 def p_metodos(prod):
@@ -305,11 +314,10 @@ def print_tree(nodo, nivel=0):
             print_tree(child, nivel + 1)
     elif isinstance(nodo, NodoMethod):
         print("  " * nivel + "method")
-        print_tree(nodo.variable, nivel + 1)
-        print_tree(nodo.inicio, nivel + 1)
-        print_tree(nodo.condicion, nivel + 1)
-        print_tree(nodo.actualizacion, nivel + 1)
-        print_tree(nodo.cuerpo, nivel + 1)
+        print_tree(nodo.idMethod, nivel + 1)
+        print_tree(nodo.tipo, nivel + 1)
+        print_tree(nodo.idParam, nivel + 1)
+        print_tree(nodo.bloque, nivel + 1)
     else:
         print("  " * nivel + str(nodo))
 
