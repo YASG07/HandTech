@@ -314,9 +314,10 @@ def print_tree(nodo, nivel=0):
         print("  " * nivel + str(nodo))
 
 #leer código desde un archivo
-file = open("test/test.ht")#toma como base la dirección del programa ejecutandose
-codigo = file.read()#cargar el contenido en una variable
-file.close()
+
+#file = open("test/test.ht")#toma como base la dirección del programa ejecutandose
+#codigo = file.read()#cargar el contenido en una variable
+#file.close()
 
 #instancia del analizador sintactico
 parser = yacc.yacc()
@@ -329,4 +330,7 @@ def analisisSintactico(src):
     resultado = parser.parse(src)
     print_tree(resultado)
 
-analisisSintactico(codigo)
+#analisisSintactico(codigo)
+
+def llamaSintactico(input):
+    return parser.parse(input)
