@@ -12,12 +12,12 @@ class programa(Nodo):
         self.name = name
         self.name = son1
         
-    def imprimir(ident):
+    def imprimir(self,ident):
         self.son1.imprimir("" + ident) #Para controlar las identaciones
         
         print(ident + "Nodo: "+self.name)
         
-    def traducir(self):
+    def traducir(self, ident):
         global txt
         id = incrementarContador()
         son1 = self.son1.traducir()
