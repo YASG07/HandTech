@@ -330,6 +330,9 @@ def print_tree(nodo, nivel=0):
 #instancia del analizador sintactico
 parser = yacc.yacc()
 
+#No se como llamar al semantico
+#result.imprimir("")
+
 #Evitar la impresión de advertencias de token no utilizado
 yacc.errorlog = yacc.NullLogger()
 
