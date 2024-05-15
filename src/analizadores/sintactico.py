@@ -5,14 +5,14 @@ import ply.yacc as yacc
 
 from lexico import tokens
 
-'''precedence = (
+precedence = (
     ('right','ASSIGN'),
     ('left','NE'),
     ('left', 'LT', 'LTE', 'GT', 'GTE'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
     ('left', 'LPARENT', 'RPARENT'),
-)'''
+)
 
 #métodos para validar cada una de las gramaticas que componen el lenguaje
 #gramatica base
