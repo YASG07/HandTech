@@ -2,12 +2,9 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox as mb
-from lexico import tokens,reserved,lexer,symbols_descriptions
-from sintactico import analisisSintactico, parser, yacc,llamaSintactico
-#import os
-#import codecs
-#from tkinter import filedialog as FileDialog
-#from tkinter import messagebox
+from lexico import tokens,reserved,lexer
+from sintactico import parser, yacc
+
 
 
 
@@ -22,9 +19,6 @@ pero existe un problema y es que no funciona tan bien como se esperaba ya que ap
 sus dimensiones la numeracion seguira aumentando más no se mostraran. Así que si ven que su limite es
 24 lineas, apesar que el codigo sea de más renglones, no se pudo corregir este bug.
 '''
-
-
-
 class ScrollTextWithLineNumbers(Frame):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)  # Llama al constructor de la clase base (Frame)
@@ -51,8 +45,6 @@ class ScrollTextWithLineNumbers(Frame):
         self.text_widget.bind('<Button-4>', self._scroll_up)  # Asigna el evento Button-4 (rueda del mouse hacia arriba) al método _scroll_up
         self.text_widget.bind('<Button-5>', self._scroll_down)  # Asigna el evento Button-5 (rueda del mouse hacia abajo) al método _scroll_down
         
-
-
         # Actualizar los números de línea
         self._update_line_numbers()
         
@@ -96,37 +88,16 @@ class ScrollTextWithLineNumbers(Frame):
 def analisisSintactico():
     cadena = scroll_text_widget.get_text()
     if len(cadena) > 0:
-        cadena=[]
-        cont = 0;
-        for i  in llamaSintactico(cadena):
-            
-            if(cont == 0):
-                cont ==1
-            else:
-                cadena.append(i)
-            
-        '''
         try:
             resultado = parser.parse(cadena)
             mostrarAnalisisSintactico(resultado)
         except yacc.YaccError as e:
             print("Error durante el análisis sintáctico:", e)
-            mb.showerror("Error", str(e))'''
+            mb.showerror("Error", str(e))
     else:
-        mb.showwarning("ERROR", "Debes escribir código")
+        mb.showwarning("ERROR", "Debes escribir código")
+       
 
-#def analisisSintactico():
-#    cadena = scroll_text_widget.get_text()
-#    if len(cadena) > 0:
-#        try:
- #           resultado = parser.parse(cadena)
- #           mostrarAnalisisSintactico(resultado)
- #       except yacc.YaccError as e:
- #           print("Error durante el análisis sintáctico:", e)
- #           mb.showerror("Error", str(e))
- #   else:
- #      mb.showwarning("ERROR", "Debes escribir código")
-        
 def mostrarAnalisisSintactico(data):
     scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
     scrollAnalisis.delete(1.0, END)  # Borrar el contenido previo
@@ -142,7 +113,6 @@ def mostrarAnalisisLexico(tokens):
     scrollAnalisis.delete(1.0, END)  # Borrar el contenido previo
     for token in tokens:
         token_type, token_value, token_lineno, token_lexpos = token
-        
         scrollAnalisis.insert(INSERT, f'Tipo: {token_type}, Valor: {token_value}, Ren: {token_lineno}, Col: {token_lexpos}\n')  # Insertar cada token en una nueva línea
     scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
 
@@ -154,9 +124,9 @@ def mostrarAnalisisLexico(tokens):
 def AbrirArchivos():
     filename = filedialog.askopenfilename(initialdir="/",
                                           title="Select a File",
-                                          filetypes=(("HT files", ".ht"), ("Text files", ".txt"), ("all files", "*.*")))
+                                          filetypes=(("Text files", "*.txt"), ("all files", "*.*")))
     if filename != '':
-        if filename.endswith((".ht", ".txt")):  # Comprueba si la extensión es .ht o .txt
+        if filename.endswith(".txt"):
             root.title("Compilador Python   code: " + filename)
             with open(filename, "r", encoding="utf-8") as file:
                 content = file.read()
@@ -164,25 +134,25 @@ def AbrirArchivos():
                 scroll_text_widget.set_text(content)
                 scroll_text_widget._update_line_numbers()
         else:
-            mb.showerror("Error", "El archivo seleccionado no es de tipo .ht o .txt")
+            mb.showerror("Error", "El archivo seleccionado no es de tipo .txt")
 
 def GuardarComo():
     filename = filedialog.asksaveasfilename(initialdir="/", title="Guardar como",
-                                            filetypes=(("HT files", ".ht"), ("Text files", ".txt"), ("todos los archivos", "*.*")))
+                                            filetypes=(("txt files", "*.txt"), ("todos los archivos", "*.*")))
     if filename != '':
-        if filename.endswith((".ht", ".txt")):  # Comprueba si la extensión es .ht o .txt
+        if filename.endswith(".txt"):
             root.title("Compilador Python   code: " + filename)
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(scroll_text_widget.get_text())
             mb.showinfo("Información", "Los datos fueron guardados en el archivo.")
         else:
-            mb.showerror("Error", "El archivo debe ser de tipo .ht o .txt")
+            mb.showerror("Error", "El archivo debe ser de tipo .txt")
 
 def Guardar():
     filename = root.title()
     if filename.startswith("Compilador Python   code: "):
         filename = filename.lstrip("Compilador Python   code: ")
-        if filename.endswith(".ht",".txt"):
+        if filename.endswith(".txt"):
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(scroll_text_widget.get_text())
             mb.showinfo("Información", "Los cambios fueron guardados en el archivo.")
@@ -198,7 +168,6 @@ def NuevoArchivo():
 def AunSinAgregar():
     mb.showerror("Atención","Aun no se agrega esta funcion al compilador.")
 
-
 def analisisLexico():
     cadena = scroll_text_widget.get_text()
     if len(cadena) > 0:
@@ -206,32 +175,12 @@ def analisisLexico():
         a_tok = []
         for tok in lexer:
             a_tok.append((tok.type, tok.value, tok.lineno, tok.lexpos))
-        #mostrarAnalisisLexico(a_tok)
-        mostrarResultados(a_tok)
-       
+        mostrarAnalisisLexico(a_tok)
     else:
         mb.showwarning("ERROR", "Debes escribir código")
 
-
 #a_tok.append((tok.type, tok.value, tok.lineno, tok.lexpos))
 #Configuracion del entorno
-def mostrarResultados(tokens):
-    lexico_window = Toplevel(root)
-    lexico_window.title("Resultados del Análisis Léxico")
-    lexico_window.geometry("400x400")
-    
-    lexico_scroll = Scrollbar(lexico_window)
-    lexico_scroll.pack(side=RIGHT, fill=Y)
-    
-    lexico_text = Text(lexico_window, yscrollcommand=lexico_scroll.set)
-    lexico_text.pack(expand=True, fill=BOTH)
-    
-    for token in tokens:
-        token_type, token_value, token_lineno, token_lexpos = token
-        lexico_text.insert(END, f'Tipo: {token_type}, Valor: {token_value}, Ren: {token_lineno}, Col: {token_lexpos}\n')
-    
-    lexico_scroll.config(command=lexico_text.yview)
-
 root = Tk()
 root.resizable(False,False) # Con esto denegamos que se ajuste el tamaño de la ventana de largo y ancho
 root.geometry("924x596") #definimos las dimesiones de la ventana
@@ -250,6 +199,26 @@ root.geometry(str(wventana)+"x"+str(hventana)+"+"+str(pwidth)+"+"+str(pheight))
 #Mandamos a llamar a ScrollTextWithLine y definimos donde estará
 scroll_text_widget = ScrollTextWithLineNumbers(root)
 scroll_text_widget.grid(row=1,column=0,padx=10,pady=10)
+
+#Este codigo medio funciona
+def mostrarResultados(tokens,reserved,lexer):
+    sintactico_window = Toplevel(root)
+    sintactico_window.title("Analisis Sintactico")
+    sintactico_window.geometry("450x450")
+
+    sintactico_scroll = Scrollbar(sintactico_window)
+    sintactico_scroll.pack(side=RIGHT, fill=Y)
+
+    sintactico_text = Text(sintactico_window, yscrollcommand=sintactico_scroll.set)
+    sintactico_text.pack(expand=True, fill=BOTH)
+
+    for asin in tokens,reserved,lexer:
+        idMethod,tipo,idParam,bloque = asin
+        # Por ejemplo:token_type, token_value, = token
+        sintactico_text.insert(INSERT, f" {idMethod} {tipo} {idParam} {{\n{bloque}\n}}")
+        # sintactico_text.insert(INSERT, f"{token_type} {token_value}\n")
+        pass  # Esto es solo para mostrar un marcador de posición
+    sintactico_scroll.config(command=sintactico_text.yview)
 
 #Las siguientes lineas comentadas son para que se den un ejemplo de como funcionan las funciones
 #de get_Text y set_Text
