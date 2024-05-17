@@ -1,278 +1,68 @@
-txt = ""
-cont = 0
-def incrementarContador():
-    global cont
-    cont + 1
-    return "%d" %cont
 
-class Nodo():
-    pass
-class programa(Nodo):
-    def __init__(self,son1,name):
+class Variable:
+    def __init__(self, name, value=None):
         self.name = name
-        self.name = son1
-        
-    def imprimir(self,ident):
-        self.son1.imprimir("" + ident) #Para controlar las identaciones
-        
-        print(ident + "Nodo: "+self.name)
-        
-    def traducir(self, ident):
-        global txt
-        id = incrementarContador()
-        son1 = self.son1.traducir()
-        
-        txt += ident +"[Label= "+self.name+"]"+"\n\t"
-        txt += id +"->"+son1+"\n\t"
-        
-        return "reun {\n\t"+txt+"}"
-   
-#gramatica para método principal
-class main(Nodo):
-    def __init__(self,name):
-        self.name = name
+        self.value = value
 
-    def imprimir(ident):
-        pass
-        
-    def traducir(self):
-        global txt
-        id = incrementarContador()
+class SemanticAnalyzer:
+    def __init__(self):
+        self.symbol_table = {}
 
-        return id
-    
-#bloque de código
-class bloque(Nodo):
-    def __init__(self,name):
-        self.name = name
+    def analyze(self, ast):
+        for node in ast:
+            if node["type"] == "assignment":
+                variable_name = node["variable"]
+                value_node = node["value"]
 
-    def imprimir(ident):
-        pass
-        
-    def traducir(self):
-        global txt
-        id = incrementarContador()
+                # Verificar si la variable ya está definida
+                if variable_name in self.symbol_table:
+                    print(f"Error semántico: Variable '{variable_name}' ya está definida.")
+                    return False
 
-        return id
-   
-#expression
-class expression(Nodo):
-    def __init__(self,name):
-        self.name = name
+                # Analizar el valor asignado
+                value = self.analyze_value(value_node)
+                if value is not None:
+                    self.symbol_table[variable_name] = Variable(variable_name, value)
+                else:
+                    print(f"Error semántico: Valor no válido para la variable '{variable_name}'.")
+                    return False
+            elif node["type"] == "usage":
+                variable_name = node["variable"]
 
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
+                # Verificar si la variable está definida
+                if variable_name not in self.symbol_table:
+                    print(f"Error semántico: Variable '{variable_name}' no está definida.")
+                    return False
 
-        return id
-   
-#valores (auxiliar para expression)
-class valor(Nodo):
-    def __init__(self,name):
-        self.name = name
+        return True
 
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
+    def analyze_value(self, node):
+        if node["type"] == "number":
+            return node["value"]
+        elif node["type"] == "variable":
+            variable_name = node["name"]
 
-        return id
-    
-#operadores aritmeticas
-class operadoresAritmeticos(Nodo):
-    def __init__(self,name):
-        self.name = name
+            # Verificar si la variable está definida
+            if variable_name in self.symbol_table:
+                return self.symbol_table[variable_name].value
+            else:
+                print(f"Error semántico: Variable '{variable_name}' no está definida.")
+                return None
 
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
+# Ejemplo de AST (Abstract Syntax Tree)
+ast = [
+    {"type": "assignment", "variable": "x", "value": {"type": "number", "value": "y"}},
+    {"type": "assignment", "variable": "y", "value": {"type": "variable", "name": "x"}},
+    {"type": "usage", "variable": "y"},
+    {"type": "usage", "variable": "x"}  # Variable no definida
+]
 
-        return id
-    
-#operadores logicas
-class operadoresLogicos(Nodo):
-    def __init__(self,name):
-        self.name = name
+# Crear un analizador semántico
+analyzer = SemanticAnalyzer()
 
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#operaciones aritmeticas
-class operacionesAritmeticas(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#operaciones lógicas
-class operacionesLogicas(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#partes de la mano
-class partesMano(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#instrucciones
-class instruccion(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#llamada de funciones
-class llamada(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#asignacion
-class asignacion(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#tipos de dato
-class tipoDato(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#gramatica auxiliar. Símbolo de apoyo para ciclos
-class aux(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#gramatica para ciclos
-class ciclos(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#gramatica para condicionales
-class condicion(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#gramatica para objetos
-class objetos(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#gramatica para metodos
-class metodos(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
-#método para devolver errores
-class error(Nodo):
-    def __init__(self,name):
-        self.name = name
-
-    def imprimir(ident):
-        pass
-    def traducir(self):
-        global txt
-        id = incrementarContador()
-
-        return id
-    
+# Analizar el AST
+result = analyzer.analyze(ast)
+if result:
+    print("Análisis semántico completado con éxito.")
+else:
+    print("Análisis semántico fallido.")

@@ -21,12 +21,13 @@ def p_programa(prod):
     programa : main
              | objeto
              | main objeto
+             | objeto main
              | programa funcion
     '''
     if len(prod) == 3:
-        prod[0] = ('program', prod[1], prod[2])
+        prod[0] = {'prog-obj-fnc': (prod[1], prod[2])}
     else:
-        prod[0] = ('programa', prod[1])
+        prod[0] = {'prog-obj': prod[1]}
     
 #gramatica para método principal
 def p_main(prod):
@@ -50,9 +51,9 @@ def p_bloque(prod):
            | bloque llamada
     '''
     if len(prod) == 3:
-        prod[0] = ('bloque', prod[1], prod[2])
+        prod[0] = {'bloque': (prod[1], prod[2])}
     else:
-        prod[0] = prod[1]
+        prod[0] = {'instruccion': prod[1]}
     
 #expression
 def p_expression(prod):
@@ -61,7 +62,7 @@ def p_expression(prod):
                | ID DOT ID
     '''
     if len(prod) == 4:
-        prod[0] = ('expression', prod[1], prod[3])
+        prod[0] = {'expression': (prod[1], prod[3])}
     else:
         prod[0] = prod [1]
 
@@ -109,12 +110,11 @@ def p_operacionesAritmeticas(prod):
     '''
     if len(prod) == 4:
         if prod[1] == '(':
-            prod[0] = ('grupo', prod[2])
+            prod[0] = {'grupoA': prod[2]}
         else:
-            prod[0] = ('operacionA', prod[1], prod[2], prod[3])
+            prod[0] = {'operacionA': (prod[1], prod[2], prod[3])}
     else:
         prod[0] = prod[1]
-
 
 
 #operaciones lógicas
@@ -132,13 +132,13 @@ def p_operacionesLogicas(prod):
     '''
     if len(prod) == 4:
         if prod[1] == '(':
-            prod[0] = ('grupo', prod[2])
+            prod[0] = {'grupoL': prod[2]}
         elif prod[2] == 'AND':
-            prod[0] = ('operacionL_AND', prod[1], prod[3])
+            prod[0] = {'operacionL_AND': (prod[1], prod[3])}
         else:
-            prod[0] = ('operacionL', prod[1], prod[2], prod[3])
+            prod[0] = {'operacionL': (prod[1], prod[2], prod[3])}
     elif len(prod) == 3:
-        prod[0] = ('Operacion_NOT', prod[2])
+        prod[0] = {'Operacion_NOT': prod[2]}
 
 #partes de la mano
 def p_partesMano(prod):
@@ -174,7 +174,7 @@ def p_instruccion(prod):
     elif len(prod) == 4:
         prod[0] = prod[2]
     elif len(prod) == 10:
-        prod[0] = ('instruccion_mov', prod[5], prod[7])
+        prod[0] = {'instruccion_mov': (prod[5], prod[7])}
 
 #llamada de funciones
 def p_llamada(prod):
@@ -187,9 +187,9 @@ def p_llamada(prod):
     if len(prod) == 5:
         prod[0] = prod[1]
     elif len(prod) == 7 | len(prod) == 6:
-        prod[0] = ('llamada_punto', prod[1], prod[3])
+        prod[0] = {'llamada_punto': (prod[1], prod[3])}
     elif len(prod) == 8:
-        prod[0] = ('llamada_pp', prod[1], prod[3], prod[5])
+        prod[0] = {'llamada_pp': (prod[1], prod[3], prod[5])}
 
 #asignacion
 def p_asignacion(prod):
@@ -199,11 +199,11 @@ def p_asignacion(prod):
                | ID ASSIGN expression FIN_DE_INSTRUCCION
     '''
     if len(prod) == 6:
-        prod[0] = ('asignacion_tipo', prod[1], prod[2], prod[4])
+        prod[0] = {'asignacion_tipo': (prod[1], prod[2], prod[4])}
     elif len(prod) == 5:
-        prod[0] = ('asignacion_notipo', prod[1], prod[3])
+        prod[0] = {'en_uso': (prod[1], prod[3])}
     elif len(prod) == 4:
-        prod[0] = ('inicialización', prod[1], prod[2])
+        prod[0] = {'inicialización': (prod[1], prod[2])}
 
 #tipos de dato
 def p_tipoDato(prod):
@@ -226,7 +226,7 @@ def p_aux(prod):
     if len(prod) == 3:
         prod[0] = prod[2]
     else:
-        prod[0] = ('aux', prod[2], prod[4])
+        prod[0] = {'aux': (prod[2], prod[4])}
 
 #gramatica para ciclos
 def p_ciclos(prod):
@@ -238,16 +238,16 @@ def p_ciclos(prod):
           | for LPARENT TWPOINT operacionL TWPOINT RPARENT LKEY bloque RKEY
     '''
     if prod[1] == 'while':
-        prod[0] = ('ciclo_while', prod[3], prod[6])
+        prod[0] = {'ciclo_while': (prod[3], prod[6])}
     elif len(prod) == 12:
-        prod[0] = ('ciclo_for', prod[3], prod[5], prod[7], prod[10])
+        prod[0] = {'ciclo_for': (prod[3], prod[5], prod[7], prod[10])}
     elif len(prod) == 11:
         if prod[3] == ':':
-            prod[0] = ('ciclo_for1', prod[4], prod[6], prod[9])
+            prod[0] = {'ciclo_for1': (prod[4], prod[6], prod[9])}
         else:
-            prod[0] = ('ciclo_for2', prod[3], prod[5], prod[9])
+            prod[0] = {'ciclo_for2': (prod[3], prod[5], prod[9])}
     elif len(prod) == 10:
-        prod[0] = ('ciclo_for3', prod[4], prod[8])
+        prod[0] = {'ciclo_for3': (prod[4], prod[8])}
 
 #gramatica para condicionales
 def p_condicion(prod):
@@ -256,9 +256,9 @@ def p_condicion(prod):
               | if LPARENT operacionL RPARENT then LKEY bloque RKEY else LKEY bloque RKEY
     '''
     if len(prod) == 9:
-        prod[0] = ('condicion_then', prod[3], prod[7])
+        prod[0] = {'condicion_then': (prod[3], prod[7])}
     else:
-        prod[0] = ('condicion_else', prod[3], prod[7], prod[11])
+        prod[0] = {'condicion_else': (prod[3], prod[7], prod[11])}
 
 #gramatica para objetos
 def p_objetos(prod):
@@ -268,11 +268,11 @@ def p_objetos(prod):
            | export ASSIGN objeto FIN_DE_INSTRUCCION
     '''
     if len(prod) == 6:
-        prod[0] = ('objeto', prod[2], prod[4])
+        prod[0] = {'objeto': (prod[2], prod[4])}
     elif len(prod) == 7:
-        prod[0] = ('objeto_funcion', prod[2], prod[4], prod[5])
+        prod[0] = {'objeto_funcion': (prod[2], prod[4], prod[5])}
     elif len(prod) == 5:
-        prod[0] = ('exportacion', prod[3])
+        prod[0] = {'exportacion': prod[3]}
 
 #gramatica para metodos
 def p_metodos(prod):
@@ -281,9 +281,9 @@ def p_metodos(prod):
             | method ID LPARENT tipo ID RPARENT LKEY bloque RKEY
     '''
     if len(prod) == 8:
-        prod[0] = ('funcion', prod[2], prod[6])
+        prod[0] = {'funcion': (prod[2], prod[6])}
     else:
-        prod[0] = NodoMethod(prod[2], prod[4], prod[5], prod[8])
+        prod[0] = {'funcion_parametrizada': (prod[2], prod[4], prod[5], prod[8])}
 
 #método para devolver errores
 def p_error(prod):
@@ -338,8 +338,13 @@ yacc.errorlog = yacc.NullLogger()
 
 #método para probar el código
 def analisisSintactico(src):
+    ast = []
     resultado = parser.parse(src)
-    print_tree(resultado)
+    #for prod in resultado:
+    #    if isinstance(prod, tuple):
+    #        ast.append(prod)
+    #    print(ast)
+    print(resultado)
 
 #analisisSintactico(codigo)
 
