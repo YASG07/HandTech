@@ -70,6 +70,8 @@ def p_expression(prod):
     '''
     expression : valor
                | ID DOT ID
+               | operacionA
+               | operacionL
     '''
     if len(prod) == 4:
         prod[0] = ('expression', prod[1], prod[3])
