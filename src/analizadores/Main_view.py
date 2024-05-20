@@ -4,7 +4,7 @@ from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox as mb
 from lexico import tokens,reserved,lexer
 from sintactico import parser, yacc
-
+import tkinter as tk
 
 
 
@@ -90,14 +90,14 @@ def analisisSintactico():
     if len(cadena) > 0:
         try:
             resultado = parser.parse(cadena)
-            mostrarAnalisisSintactico(resultado)
+            mostrarAnalisisSintactico2(resultado)
         except yacc.YaccError as e:
             print("Error durante el análisis sintáctico:", e)
             mb.showerror("Error", str(e))
     else:
         mb.showwarning("ERROR", "Debes escribir código")
        
-
+'''
 def mostrarAnalisisSintactico(data):
     scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
     scrollAnalisis.delete(1.0, END)  # Borrar el contenido previo
@@ -106,8 +106,58 @@ def mostrarAnalisisSintactico(data):
     else:
         for item in data:
             scrollAnalisis.insert(END, str(item) + '\n')
-    scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición        
+    scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición      
+'''
 
+#Mostrar el analisis sintactico en un ventana aparte 
+def mostrarAnalisisSintactico2(data):
+    # Crear una nueva ventana
+    nueva_ventana = tk.Toplevel()
+    nueva_ventana.title("Análisis Sintáctico")
+    # Crear un Text widget con un Scrollbar
+    text_area = Text(nueva_ventana, wrap='word')
+    scrollbar = Scrollbar(nueva_ventana, command=text_area.yview)
+    text_area.configure(yscrollcommand=scrollbar.set)
+
+    # Configurar la posición de los widgets
+    text_area.pack(side='left', fill='both', expand=True)
+    scrollbar.pack(side='right', fill='y')
+
+    # Insertar datos en el Text widget
+    text_area.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+    text_area.delete(1.0, END)  # Borrar el contenido previo
+    if isinstance(data, (int, float)):
+        text_area.insert(END, str(data) + '\n')
+    else:
+        for item in data:
+            text_area.insert(END, str(item) + '\n')
+    text_area.config(state="disabled")  # Volver a deshabilitar la edición
+
+
+#Mostrar el analisis lexico en un ventana aparte 
+def mostrarAnalisisLexico2(tokens):
+    # Crear una nueva ventana
+    nueva_ventana = tk.Toplevel()
+    nueva_ventana.title("Análisis Léxico")
+
+    # Crear un Text widget con un Scrollbar
+    text_area = Text(nueva_ventana, wrap='word')
+    scrollbar = Scrollbar(nueva_ventana, command=text_area.yview)
+    text_area.configure(yscrollcommand=scrollbar.set)
+
+    # Configurar la posición de los widgets
+    text_area.pack(side='left', fill='both', expand=True)
+    scrollbar.pack(side='right', fill='y')
+
+    # Insertar datos en el Text widget
+    text_area.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+    text_area.delete(1.0, END)  # Borrar el contenido previo
+    for token in tokens:
+        token_type, token_value, token_lineno, token_lexpos = token
+        text_area.insert(INSERT, f'Tipo: {token_type}, Valor: {token_value}, Ren: {token_lineno}, Col: {token_lexpos}\n')  # Insertar cada token en una nueva línea
+    text_area.config(state="disabled")  # Volver a deshabilitar la edición
+
+'''
 def mostrarAnalisisLexico(tokens):
     scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
     scrollAnalisis.delete(1.0, END)  # Borrar el contenido previo
@@ -115,6 +165,7 @@ def mostrarAnalisisLexico(tokens):
         token_type, token_value, token_lineno, token_lexpos = token
         scrollAnalisis.insert(INSERT, f'Tipo: {token_type}, Valor: {token_value}, Ren: {token_lineno}, Col: {token_lexpos}\n')  # Insertar cada token en una nueva línea
     scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
+'''
 
 '''
  token_type, token_value, token_lineno, token_lexpos = token
@@ -175,7 +226,7 @@ def analisisLexico():
         a_tok = []
         for tok in lexer:
             a_tok.append((tok.type, tok.value, tok.lineno, tok.lexpos))
-        mostrarAnalisisLexico(a_tok)
+        mostrarAnalisisLexico2(a_tok)
     else:
         mb.showwarning("ERROR", "Debes escribir código")
 
