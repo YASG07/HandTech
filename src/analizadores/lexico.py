@@ -1,5 +1,62 @@
 import ply.lex as lex
 
+tabla_errores = []
+
+#Funcion apra reiniciar la lista de errores y los contadores del analizador
+def reiniciar_analizador_lexico(lexer):
+    global tabla_errores
+    tabla_errores = []
+    lexer.lineno = 1
+    lexer.lexpos = 0
+
+#Funcion para obtener los errores
+def obtener_errores_lexicos():
+    global tabla_errores
+    return tabla_errores
+
+def agregar_error_lexico(error_index,error_type,error_description,value,line,column):
+    tabla_errores.append({
+        'index':error_index,
+        'type': error_type,
+        'descrption': error_description,
+        'value': value,
+        'line': line,
+        'column': column
+    })
+    
+#Funcion para ecnotrar la coliman del token en la linea
+def find_column_lex(input, token):
+    last_cr = input.rfind('\n', 0, token.lexpos)
+    if last_cr<0:
+        last_cr = 0
+    column = (token.lexpos - last_cr)
+    if column == 0:
+        return 1
+    return column
+    
+#Manejo de errores para identifacodres mal formados.
+def t_error_IDENTIFICADOR(t):
+    r'\d+[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
+    agregar_error_lexico(12,'Léxico','Identificador inválido',t.value,t.lineno,find_column_lex(t.lexer.lexdata,t))
+
+def t_error_PUNTO(t):
+    r'\.'
+    agregar_error_lexico(13,'Léxico','No se esperaba ese caracter en esta posicion',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
+
+def t_error_NUMERO_ENTERO(t):
+    r'[+-]{2,}\d+'
+    agregar_error_lexico(13,'Léxico','Formato de número entero invalido',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
+
+def t_error_NUMERO_DECIMAL(t):
+    r'\d+([\.]{2,}\d+[\.|\d]*)+ | \d+\.\d+(\.+\d+)+ | \.+\d+(\.|\d)* | (\d?\.\.\d)+ | \d+\.(?!\d)'
+    agregar_error_lexico(13,'Léxico','Formato de número decimal invalido',t.value,t.lineno,find_column_lex(t.lexer.lexerdata, t))
+
+#Manejo de errores para cualquier caracter no reconocido
+def t_error(t):
+    agregar_error_lexico(13,'Léxico','Cáracter no reconocido',t.value,t.lineno,find_column_lex(t.lexer.lexerdata, t))
+    t.lexer.skip(1)
+
+
 tokens = [
     'if',
     'then',
@@ -240,7 +297,7 @@ def t_BOOL(t):
     return t
 
 def t_ID(t):
-    r'[a-zA-Z_][a-zA-Z0-9_]*'
+    r'[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
     t.type = reserved.get(t.value, 'ID')
     if t.type != 'ID':
         t.value = (t.value, descriptions.get(t.value, 'Palabra/Simbolo Desconocido'))
@@ -258,10 +315,6 @@ def t_FIN_DE_INSTRUCCION(t):
     r'\$'
     return t
 
-def t_error(t):
-    print(f"Illegal character '{t.value[0]}' at line {t.lexer.lineno} at column {t.lexpos}")
-    t.lexer.skip(1)
-
 lexer = lex.lex()
 
 codigo = """
@@ -273,7 +326,7 @@ method run(){
 }
 
 method AgarrarSoltar(){
-   sensor sn = false$
+   senso sn = false$
    telefono tireloProfe = telefono$
    if(NOT sn AND 9) then{
       wrist.rotate(90)$ ;Cantidad de grados que rotará la muñeca
@@ -313,3 +366,6 @@ for tok in lexer:
             print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
         else:
             print(f"Token: {tok.type}, Valor: {tok.value}")
+
+for i in range(len(tabla_errores)):
+    print(tabla_errores[i])
