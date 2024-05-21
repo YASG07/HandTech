@@ -122,9 +122,9 @@ def p_operacionesAritmeticas(prod):
     '''
     if len(prod) == 4:
         if prod[1] == '(':
-            prod[0] = ('grupoA', prod[2])
+            prod[0] = ('grupo', prod[2])
         else:
-            prod[0] = ('operacionA', prod[1], prod[2], prod[3])
+            prod[0] = ('operacion', prod[1], prod[2], prod[3])
     else:
         prod[0] = prod[1]
 
@@ -144,11 +144,11 @@ def p_operacionesLogicas(prod):
     '''
     if len(prod) == 4:
         if prod[1] == '(':
-            prod[0] = ('grupoL', prod[2])
+            prod[0] = ('grupo', prod[2])
         elif prod[2] == 'AND':
             prod[0] = ('operacionL_AND', prod[1], prod[3])
         else:
-            prod[0] = ('operacionL', prod[1], prod[2], prod[3])
+            prod[0] = ('operacion', prod[1], prod[2], prod[3])
     elif len(prod) == 3:
         prod[0] = ('Operacion_NOT', prod[2])
 
@@ -213,9 +213,9 @@ def p_asignacion(prod):
     if len(prod) == 6:
         prod[0] = ('asignacion', prod[1], prod[2], prod[4])
     elif len(prod) == 5:
-        prod[0] = ('asignacion', prod[1], prod[3])
+        prod[0] = ('asignacion_noTipo', prod[1], prod[3])
     elif len(prod) == 4:
-        prod[0] = ('asignacion', prod[1], prod[2])
+        prod[0] = ('inicialización', prod[1], prod[2])
 
 #tipos de dato
 def p_tipoDato(prod):

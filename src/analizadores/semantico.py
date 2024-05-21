@@ -1,68 +1,103 @@
+#Analizador semántico para HandTech (.ht)
 
-class Variable:
-    def __init__(self, name, value=None):
-        self.name = name
-        self.value = value
+#imports
+import sintactico
+import lexico
 
-class SemanticAnalyzer:
-    def __init__(self):
-        self.symbol_table = {}
+#variable tablaSimbolos y lista de errores
+tablaSimbolos = {}
+errores = []
 
-    def analyze(self, ast):
-        for node in ast:
-            if node["type"] == "assignment":
-                variable_name = node["variable"]
-                value_node = node["value"]
+#metodo para limpiar ambos parametros
+def destructor():
+    tablaSimbolos.clear()
+    errores.clear()
 
-                # Verificar si la variable ya está definida
-                if variable_name in self.symbol_table:
-                    print(f"Error semántico: Variable '{variable_name}' ya está definida.")
-                    return False
+#recibe un arbol de sintaxis abstracta (resultado de yacc.parse)
+def analisis(asa):
+    print(asa)
+    if not asa:
+        return
+    
+    nodo = asa[0]
 
-                # Analizar el valor asignado
-                value = self.analyze_value(value_node)
-                if value is not None:
-                    self.symbol_table[variable_name] = Variable(variable_name, value)
-                else:
-                    print(f"Error semántico: Valor no válido para la variable '{variable_name}'.")
-                    return False
-            elif node["type"] == "usage":
-                variable_name = node["variable"]
-
-                # Verificar si la variable está definida
-                if variable_name not in self.symbol_table:
-                    print(f"Error semántico: Variable '{variable_name}' no está definida.")
-                    return False
-
-        return True
-
-    def analyze_value(self, node):
-        if node["type"] == "number":
-            return node["value"]
-        elif node["type"] == "variable":
-            variable_name = node["name"]
-
-            # Verificar si la variable está definida
-            if variable_name in self.symbol_table:
-                return self.symbol_table[variable_name].value
+    if nodo == 'prog-obj':
+        print(nodo)
+        analisis(asa[1])
+    elif nodo == 'bloque':
+        print(nodo)
+        for instruccion in asa[1]:
+            analisis(instruccion)
+    elif nodo == 'asignacion':
+        print(nodo)
+        tipoDato = asa[1][0]
+        print(tipoDato)
+        identificador = asa[2]
+        print(identificador)
+        valor = asa[3]
+        print(valor)
+        if identificador in tablaSimbolos:
+            errores.append(f"Error: variable '{identificador}' ya existe.")
+        else:
+            if identificador == valor:
+                errores.append(f"Errores: variable '{identificador}' ya existe")
             else:
-                print(f"Error semántico: Variable '{variable_name}' no está definida.")
-                return None
+                tablaSimbolos[identificador] = tipoDato
+        if type(valor) == str:
+            if valor not in tablaSimbolos:
+                errores.append(f"Errores: variable '{valor}' no existe")
+    elif nodo == 'inicialización':
+        print(nodo)
+        tipoDato = asa[1][0]
+        print(tipoDato)
+        identificador = asa[2]
+        print(identificador)
+        if identificador in tablaSimbolos:
+            errores.append(f"Error: variable '{identificador}' ya existe.")
+        else:
+            tablaSimbolos[identificador] = tipoDato
+    elif nodo == 'asignacion_noTipo':
+        print(nodo)
+        identificador = asa[1]
+        print(identificador)
+        valor = asa[2]
+        print(valor)
+        if identificador not in tablaSimbolos:
+            errores.append(f"Error: variable '{identificador}' no existe.")
+        elif type(valor) == str:
+            if valor not in tablaSimbolos:
+                errores.append(f"Error: variable '{valor}' no existe.")
+    elif nodo == 'operacion':
+        print(nodo)
+        izq = asa[1]
+        print(izq)
+        der = asa[3]
+        print(der)
+        analisis(izq)
+        analisis(der)
+    elif nodo == 'grupo':
+        print(nodo)
+        analisis(asa[1])
+        
+def analizar(src):
+    destructor()
+    asa = sintactico.parser.parse(src)
+    analisis(asa)
+    print(tablaSimbolos)
+    if errores:
+        return "Errores detectados en:\n" + "\n".join(errores)
+    return "Análisis semántico completado sin errores."
 
-# Ejemplo de AST (Abstract Syntax Tree)
-ast = [
-    {"type": "assignment", "variable": "x", "value": {"type": "number", "value": "y"}},
-    {"type": "assignment", "variable": "y", "value": {"type": "variable", "name": "x"}},
-    {"type": "usage", "variable": "y"},
-    {"type": "usage", "variable": "x"}  # Variable no definida
-]
+def test(src):
+    print(sintactico.parser.parse(src))
 
-# Crear un analizador semántico
-analyzer = SemanticAnalyzer()
-
-# Analizar el AST
-result = analyzer.analyze(ast)
-if result:
-    print("Análisis semántico completado con éxito.")
-else:
-    print("Análisis semántico fallido.")
+src = '''
+method run(){
+   int d$
+   int t = d$
+   t = 5$
+}
+'''
+resultado = analizar(src)
+print(resultado)
+#test(src)
