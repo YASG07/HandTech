@@ -5,7 +5,7 @@ from tkinter import messagebox as mb
 from lexico import tokens,reserved,lexer
 from sintactico import parser, yacc
 import tkinter as tk
-
+from tkinter import filedialog, messagebox
 
 
 #Estructura Visual del compilador y funciones basicas
@@ -166,7 +166,6 @@ def mostrarAnalisisLexico(tokens):
         scrollAnalisis.insert(INSERT, f'Tipo: {token_type}, Valor: {token_value}, Ren: {token_lineno}, Col: {token_lexpos}\n')  # Insertar cada token en una nueva línea
     scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
 '''
-
 '''
  token_type, token_value, token_lineno, token_lexpos = token
  scrollAnalisis.insert(INSERT, f'Tipo: {token_type}, Valor: {token_value}, Ren: {token_lineno}, Col: {token_lexpos}\n')
@@ -175,9 +174,9 @@ def mostrarAnalisisLexico(tokens):
 def AbrirArchivos():
     filename = filedialog.askopenfilename(initialdir="/",
                                           title="Select a File",
-                                          filetypes=(("Text files", "*.txt"), ("all files", "*.*")))
+                                          filetypes=(("Text files", "*.txt"), ("Ht files", "*.ht"), ("all files", "*.*")))
     if filename != '':
-        if filename.endswith(".txt"):
+        if filename.endswith((".txt", ".ht")):  # Pa' abrir archivos .txt o .ht
             root.title("Compilador Python   code: " + filename)
             with open(filename, "r", encoding="utf-8") as file:
                 content = file.read()
@@ -185,32 +184,35 @@ def AbrirArchivos():
                 scroll_text_widget.set_text(content)
                 scroll_text_widget._update_line_numbers()
         else:
-            mb.showerror("Error", "El archivo seleccionado no es de tipo .txt")
+            mb.showerror("Error", "El archivo seleccionado no es de tipo .txt o .ht")
+
 
 def GuardarComo():
     filename = filedialog.asksaveasfilename(initialdir="/", title="Guardar como",
-                                            filetypes=(("txt files", "*.txt"), ("todos los archivos", "*.*")))
+                                            filetypes=(("txt files", "*.txt"), ("ht files", "*.ht"), ("todos los archivos", "*.*")))
     if filename != '':
-        if filename.endswith(".txt"):
+        if filename.endswith((".txt", ".ht")):  # Pa' guardar como .txt o .ht
             root.title("Compilador Python   code: " + filename)
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(scroll_text_widget.get_text())
-            mb.showinfo("Información", "Los datos fueron guardados en el archivo.")
+            messagebox.showinfo("Información", "Los datos fueron guardados en el archivo.")
         else:
-            mb.showerror("Error", "El archivo debe ser de tipo .txt")
+            messagebox.showerror("Error", "El archivo debe contener la extension .txt o .ht")
+
 
 def Guardar():
     filename = root.title()
     if filename.startswith("Compilador Python   code: "):
         filename = filename.lstrip("Compilador Python   code: ")
-        if filename.endswith(".txt"):
+        if filename.endswith((".txt", ".ht")):                  # Pa' guardar como .txt o .ht
             with open(filename, "w", encoding="utf-8") as file:
                 file.write(scroll_text_widget.get_text())
-            mb.showinfo("Información", "Los cambios fueron guardados en el archivo.")
+            messagebox.showinfo("Información", "Los cambios fueron guardados en el archivo.")
         else:
             GuardarComo()
     else:
         GuardarComo()
+
 
 def NuevoArchivo():
     root.title("Compilador Python")
@@ -293,6 +295,9 @@ boton.grid(row=0,column=0)'''
 scrollAnalisis = ScrolledText(root, width=100,  height=8, font = ("Console", 11), state="disabled")
 scrollAnalisis.grid(row=2,column=0,padx=10,pady=10)
 
+def cambiar_tamaño_letra(size):
+    scroll_text_widget.text_widget.config(font=("Console", size))
+
 #El menu bar donde estarán funciones de manejo de archivos y otras cosas
 menubar = Menu(root, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
 file = Menu(menubar, tearoff=1)  
@@ -314,7 +319,16 @@ tablas.add_command(label="Estatica")
 tablas.add_command(label="Dinamica")
 menubar.add_cascade(label="Tablas", menu=tablas)
 
+# Menú para seleccionar el tamaño de la fuente No jala bien de momento
+font_menu = Menu(menubar, tearoff=0)
+font_menu.add_command(label="10", command=lambda: cambiar_tamaño_letra(10))
+font_menu.add_command(label="12", command=lambda: cambiar_tamaño_letra(12))
+font_menu.add_command(label="14", command=lambda: cambiar_tamaño_letra(14))
+font_menu.add_command(label="16", command=lambda: cambiar_tamaño_letra(16))
+font_menu.add_command(label="18", command=lambda: cambiar_tamaño_letra(18))
+font_menu.add_command(label="20", command=lambda: cambiar_tamaño_letra(20))
 
+menubar.add_cascade(label="Tamaño de la letra xd", menu=font_menu)
 
 root.config(menu=menubar)
 root.mainloop()
