@@ -341,12 +341,3 @@ yacc.errorlog = yacc.NullLogger()
 def analisisSintactico(src):
     resultado = parser.parse(src)
     print(resultado)
-
-src = '''
-method run(){
-   int d$
-   int t = d$
-   t = 5$
-}
-'''
-analisisSintactico(src)
