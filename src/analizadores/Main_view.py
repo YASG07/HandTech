@@ -110,7 +110,6 @@ def mostrarAnalisisLexico2(tokens):
 def mostrarAnalisisLexico2(tokens):
     global lexico_window
     lexico_window = cerrar_ventana(lexico_window)  # Cerrar la ventana existente si hay una
-    lexer.lineno = 1
     # Crear una nueva ventana
     lexico_window = Toplevel()
     lexico_window.title("Análisis Léxico")
@@ -142,6 +141,7 @@ def mostrarAnalisisLexico2(tokens):
     # Configurar la posición de los widgets
     tree.pack(side='left', fill='both', expand=True)
     scrollbar.pack(side='right', fill='y')
+    lexer.lineno = 1
     for i in range(len(tabla_errores)):
         print(tabla_errores[i])
 
@@ -180,7 +180,8 @@ def mostrarAnalisisSintactico2(data):
         for item in data:
             text_area.insert(END, str(item) + '\n')
     text_area.config(state="disabled")  # Volver a deshabilitar la edición
-
+    lexer.lineno = 1
+    
 def analisisSintactico():
     cadena = scroll_text_widget.get_text()
     if len(cadena) > 0:
@@ -192,6 +193,7 @@ def analisisSintactico():
             mb.showerror("Error", str(e))
     else:
         mb.showwarning("ERROR", "Debes escribir código")
+    lexer.lineno = 1
 
 def tablaEstatica():
     global tabla_window

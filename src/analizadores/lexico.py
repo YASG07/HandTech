@@ -7,7 +7,6 @@ tabla_simbolos = {}
 def reiniciar_analizador_lexico(lexer):
     global tabla_errores
     tabla_errores = []
-    tabla_simbolos = {}
     lexer.lineno = 1
     lexer.lexpos = 0
 
@@ -372,38 +371,8 @@ codigo = """
 method run(){
    ;Aquí mandas a llamar los métodos que llegues a crear
    ;fng1 = 30$
-   degree = 33.5$
-   AgarrarSoltar()$
+   degree a = 33.5$
 }
-a
-method AgarrarSoltar(){
-   sensor sn = false$
-   telefono tireloProfe = telefono$
-   if(NOT sn AND 9) then{
-      ;wrist.rotate(90)$ Cantidad de grados que rotará la muñeca
-      wait(2000)$ ;Espera una cantidad de 2 segundos
-      ;arm.mov(10)$ Cantidad de cm que se moverá la mano con respecto a X
-      wait(2000)$
-      ;hand.mov(tireloProfe.ancho)$ Cierra la mano en un valor de grados que indica parámetro del objeto
-      sn = true$
-      --incremento$
-      ++incremento$
-      hola +=+ hi$
-   } else {
-      ;hand.mov(-tireloProfe.ancho)$ Abre la mano
-      wait(2000)$
-      ;arm.mov(-10)$
-      wait(2000)$
-      ;wrist.rotate(-90)$  Cantidad de grados que rotará la muñeca en -X
-      sn = false$
-   }
-}
-
-mbm telefono {
-    int ancho = 15$ ;Cantidad en cm del ancho del obj
-    int alto = 27$ ;Cantidad en cm del alto del obj
-} ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
-
 """
 
 
@@ -421,4 +390,5 @@ for tok in lexer:
 
 for i in range(len(tabla_errores)):
     print(tabla_errores[i])
+lexer.lineno = 1
     
