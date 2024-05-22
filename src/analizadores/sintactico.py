@@ -23,6 +23,7 @@ def p_programa(prod):
              | main objeto
              | objeto main
              | programa funcion
+             | funcion programa
     '''
     if len(prod) == 3:
         prod[0] = ('prog-obj-fnc', prod[1], prod[2])
@@ -330,12 +331,6 @@ def print_tree(nodo, nivel=0):
     else:
         print("  " * nivel + str(nodo))
 
-#leer código desde un archivo
-
-#file = open("test/test.ht")#toma como base la dirección del programa ejecutandose
-#codigo = file.read()#cargar el contenido en una variable
-#file.close()
-
 #instancia del analizador sintactico
 parser = yacc.yacc()
 
@@ -346,3 +341,12 @@ yacc.errorlog = yacc.NullLogger()
 def analisisSintactico(src):
     resultado = parser.parse(src)
     print(resultado)
+
+src = '''
+method run(){
+   int d$
+   int t = d$
+   t = 5$
+}
+'''
+analisisSintactico(src)
