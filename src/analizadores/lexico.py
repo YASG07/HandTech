@@ -1,11 +1,13 @@
 import ply.lex as lex
 
 tabla_errores = []
+tabla_simbolos = {}
 
 #Funcion apra reiniciar la lista de errores y los contadores del analizador
 def reiniciar_analizador_lexico(lexer):
     global tabla_errores
     tabla_errores = []
+    tabla_simbolos = {}
     lexer.lineno = 1
     lexer.lexpos = 0
 
@@ -281,19 +283,42 @@ t_NOT = r'NOT'
 t_ignore = ' \t'
 t_ignore_NEWLINE = r'\n'
 
+#Expresión para actualiar la linea
+def t_newline(t):
+    r'\n+'
+    t.lexer.lineno += len(t.value)
+
 def t_DECIMAL(t):
     r'\d+\.\d+'
     t.value = float(t.value)
+    tabla_simbolos[t.value] = {
+        'type': 'DECIMAL',
+        'value': t.value,
+        'line': t.lineno,
+        'column': find_column_lex(t.lexer.lexdata, t)
+    }
     return t
 
 def t_NUMBER(t):
     r'\d+'
     t.value = int(t.value)
+    tabla_simbolos[t.value] = {
+        'type': 'ENTERO',
+        'value': t.value,
+        'line': t.lineno,
+        'column': find_column_lex(t.lexer.lexdata, t)
+    }
     return t
 
 def t_BOOL(t):
     r'[Vv]alor|[Ff]also'
     t.value = True if t.value.lower() == 'valor' else False
+    tabla_simbolos[t.value] = {
+        'type': 'BOOL',
+        'value': t.value,
+        'line': t.lineno,
+        'column': find_column_lex(t.lexer.lexdata, t)
+    }
     return t
 
 def t_ID(t):
@@ -301,6 +326,12 @@ def t_ID(t):
     t.type = reserved.get(t.value, 'ID')
     if t.type != 'ID':
         t.value = (t.value, descriptions.get(t.value, 'Palabra/Simbolo Desconocido'))
+    tabla_simbolos[t.value] = {
+        'type': t.type,
+        'value': t.value,
+        'line': t.lineno,
+        'column': find_column_lex(t.lexer.lexdata, t)
+    }
     return t
 
 def t_COMENTARIOS(t):
@@ -369,3 +400,7 @@ for tok in lexer:
 
 for i in range(len(tabla_errores)):
     print(tabla_errores[i])
+    
+print("\nTabla de símbolos:")
+for key, value in tabla_simbolos.items():
+    print(f"{key}: {value}")
