@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox as mb
-from lexico import tokens, reserved, lexer, descriptions
+from lexico import tokens, reserved, lexer, descriptions, tabla_errores
 from sintactico import parser, yacc
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -110,7 +110,7 @@ def mostrarAnalisisLexico2(tokens):
 def mostrarAnalisisLexico2(tokens):
     global lexico_window
     lexico_window = cerrar_ventana(lexico_window)  # Cerrar la ventana existente si hay una
-
+    lexer.lineno = 1
     # Crear una nueva ventana
     lexico_window = Toplevel()
     lexico_window.title("Análisis Léxico")
@@ -142,6 +142,8 @@ def mostrarAnalisisLexico2(tokens):
     # Configurar la posición de los widgets
     tree.pack(side='left', fill='both', expand=True)
     scrollbar.pack(side='right', fill='y')
+    for i in range(len(tabla_errores)):
+        print(tabla_errores[i])
 
 
 def analisisLexico():
@@ -298,7 +300,7 @@ def Ventana2(data,title):
 root = Tk()
 root.resizable(FALSE,FALSE) # Con esto denegamos que se ajuste el tamaño de la ventana de largo y ancho
 root.geometry("924x596") #definimos las dimesiones de la ventana
-root.title("Compilador Python") #Titulo de la ventana
+root.title("Compilador HandTech") #Titulo de la ventana
 
 wtotal = root.winfo_screenwidth()
 htotal = root.winfo_screenheight()

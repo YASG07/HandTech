@@ -18,12 +18,12 @@ def obtener_errores_lexicos():
 
 def agregar_error_lexico(error_index,error_type,error_description,value,line,column):
     tabla_errores.append({
-        'index':error_index,
-        'type': error_type,
-        'descrption': error_description,
-        'value': value,
-        'line': line,
-        'column': column
+        'Indice':error_index,
+        'Tipo': error_type,
+        'Descripción': error_description,
+        'Valor': value,
+        'Linea': line,
+        'columna': column
     })
     
 #Funcion para ecnotrar la coliman del token en la linea
@@ -40,23 +40,35 @@ def find_column_lex(input, token):
 def t_error_IDENTIFICADOR(t):
     r'\d+[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
     agregar_error_lexico(12,'Léxico','Identificador inválido',t.value,t.lineno,find_column_lex(t.lexer.lexdata,t))
-
+    t.lexer.skip(len(t.value))
+    
 def t_error_PUNTO(t):
     r'\.'
     agregar_error_lexico(13,'Léxico','No se esperaba ese caracter en esta posicion',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
+    t.lexer.skip(len(t.value))
 
 def t_error_NUMERO_ENTERO(t):
     r'[+-]{2,}\d+'
     agregar_error_lexico(13,'Léxico','Formato de número entero invalido',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
-
+    t.lexer.skip(len(t.value))
+    
 def t_error_NUMERO_DECIMAL(t):
     r'\d+([\.]{2,}\d+[\.|\d]*)+ | \d+\.\d+(\.+\d+)+ | \.+\d+(\.|\d)* | (\d?\.\.\d)+ | \d+\.(?!\d)'
-    agregar_error_lexico(13,'Léxico','Formato de número decimal invalido',t.value,t.lineno,find_column_lex(t.lexer.lexerdata, t))
+    agregar_error_lexico(13,'Léxico','Formato de número decimal invalido',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
+    t.lexer.skip(len(t.value))
 
+# Regla de manejo de errores para caracteres sueltos no reconocidos
+def t_error_CHARACTER(t):
+    r'\b[a-zA-Z_ñÑ]\b'
+    agregar_error_lexico(15, 'Léxico', 'Carácter no esperado en esta posición', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
+    t.lexer.skip(1)
+
+    
 #Manejo de errores para cualquier caracter no reconocido
 def t_error(t):
-    agregar_error_lexico(13,'Léxico','Cáracter no reconocido',t.value,t.lineno,find_column_lex(t.lexer.lexerdata, t))
+    agregar_error_lexico(13,'Léxico','Cáracter no reconocido',t.value[0],t.lineno,find_column_lex(t.lexer.lexdata, t))
     t.lexer.skip(1)
+
 
 
 tokens = [
@@ -181,6 +193,9 @@ reserved = {
     'NOT':'NOT'
 }
 
+# Lista de subcadenas de palabras reservadas
+partial_reserved = {word[:i] for word in reserved for i in range(1, len(word))}
+
 # Diccionario de descripciones para palabras reservadas
 descriptions = {
     'if': 'Condición de control para la ejecución condicional de instrucciones',
@@ -287,15 +302,31 @@ t_ignore_NEWLINE = r'\n'
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
+    
+def t_ID(t):
+    r'[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
+    if t.value in reserved:
+        t.type = reserved[t.value]
+    elif t.value in partial_reserved:
+        agregar_error_lexico(14, 'Léxico', f'Palabra reservada incompleta: {t.value}', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
+        t.lexer.skip(len(t.value))
+    else:
+        if t.value not in tabla_simbolos:
+            tabla_simbolos[t.value] = {
+                'Tipo': 'identificador',
+                'Valor': t.value,
+                'Descripción': 'Identificador'
+            }
+    return t
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
     t.value = float(t.value)
     tabla_simbolos[t.value] = {
-        'type': 'DECIMAL',
-        'value': t.value,
-        'line': t.lineno,
-        'column': find_column_lex(t.lexer.lexdata, t)
+        'Tipo': 'DECIMAL',
+        'Valor': t.value,
+        'Linea': t.lineno,
+        'Columna': find_column_lex(t.lexer.lexdata, t)
     }
     return t
 
@@ -303,10 +334,10 @@ def t_NUMBER(t):
     r'\d+'
     t.value = int(t.value)
     tabla_simbolos[t.value] = {
-        'type': 'ENTERO',
-        'value': t.value,
-        'line': t.lineno,
-        'column': find_column_lex(t.lexer.lexdata, t)
+        'Tipo': 'ENTERO',
+        'Valor': t.value,
+        'Linea': t.lineno,
+        'Columna': find_column_lex(t.lexer.lexdata, t)
     }
     return t
 
@@ -314,23 +345,10 @@ def t_BOOL(t):
     r'[Vv]alor|[Ff]also'
     t.value = True if t.value.lower() == 'valor' else False
     tabla_simbolos[t.value] = {
-        'type': 'BOOL',
-        'value': t.value,
-        'line': t.lineno,
-        'column': find_column_lex(t.lexer.lexdata, t)
-    }
-    return t
-
-def t_ID(t):
-    r'[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
-    t.type = reserved.get(t.value, 'ID')
-    if t.type != 'ID':
-        t.value = (t.value, descriptions.get(t.value, 'Palabra/Simbolo Desconocido'))
-    tabla_simbolos[t.value] = {
-        'type': t.type,
-        'value': t.value,
-        'line': t.lineno,
-        'column': find_column_lex(t.lexer.lexdata, t)
+        'Tipo': 'BOOL',
+        'Valor': t.value,
+        'Linea': t.lineno,
+        'Columna': find_column_lex(t.lexer.lexdata, t)
     }
     return t
 
@@ -346,36 +364,37 @@ def t_FIN_DE_INSTRUCCION(t):
     r'\$'
     return t
 
+
+
 lexer = lex.lex()
 
 codigo = """
 method run(){
    ;Aquí mandas a llamar los métodos que llegues a crear
    ;fng1 = 30$
-   degree = 33$
+   degree = 33.5$
    AgarrarSoltar()$
 }
-
+a
 method AgarrarSoltar(){
-   senso sn = false$
+   sensor sn = false$
    telefono tireloProfe = telefono$
    if(NOT sn AND 9) then{
-      wrist.rotate(90)$ ;Cantidad de grados que rotará la muñeca
+      ;wrist.rotate(90)$ Cantidad de grados que rotará la muñeca
       wait(2000)$ ;Espera una cantidad de 2 segundos
-      arm.mov(10)$ ;Cantidad de cm que se moverá la mano con respecto a X
+      ;arm.mov(10)$ Cantidad de cm que se moverá la mano con respecto a X
       wait(2000)$
-      hand.mov(tireloProfe.ancho)$ <- Cierra la mano en un valor de grados que indica el
-                                                        parámetro del objeto ->
+      ;hand.mov(tireloProfe.ancho)$ Cierra la mano en un valor de grados que indica parámetro del objeto
       sn = true$
       --incremento$
       ++incremento$
       hola +=+ hi$
    } else {
-      hand.mov(-tireloProfe.ancho)$ ;Abre la mano
+      ;hand.mov(-tireloProfe.ancho)$ Abre la mano
       wait(2000)$
-      arm.mov(-10)$
+      ;arm.mov(-10)$
       wait(2000)$
-      wrist.rotate(-90)$  ;Cantidad de grados que rotará la muñeca en -X
+      ;wrist.rotate(-90)$  Cantidad de grados que rotará la muñeca en -X
       sn = false$
    }
 }
@@ -386,6 +405,8 @@ mbm telefono {
 } ;Objeto teléfono nos ayudará a establecer los límites de dicho objeto
 
 """
+
+
 
 lexer.input(codigo)
 
@@ -401,6 +422,3 @@ for tok in lexer:
 for i in range(len(tabla_errores)):
     print(tabla_errores[i])
     
-print("\nTabla de símbolos:")
-for key, value in tabla_simbolos.items():
-    print(f"{key}: {value}")
