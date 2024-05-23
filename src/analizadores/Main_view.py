@@ -167,12 +167,12 @@ def imprimir_errores():
     scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
 
     for error in tabla_errores:
-        texto_error = f"Indice: {error['Indice']}\n"
-        texto_error += f"Tipo: {error['Tipo']}\n"
-        texto_error += f"Descripción: {error['Descripción']}\n"
-        texto_error += f"Valor: {error['Valor']}\n"
-        texto_error += f"Linea: {error['Linea']}\n"
-        texto_error += f"Columna: {error['columna']}\n\n"
+        texto_error = f"Indice: {error['Indice']},"
+        texto_error += f"Tipo: {error['Tipo']},"
+        texto_error += f"Descripción: {error['Descripción']},"
+        texto_error += f"Valor: {error['Valor']},"
+        texto_error += f"Linea: {error['Linea']},"
+        texto_error += f"Columna: {error['columna']}\n"
 
         scrollAnalisis.insert(INSERT, texto_error)
     tabla_errores.clear()
@@ -339,7 +339,7 @@ def Ventana2(data,title):
 
 # Funciones adicionales (AbrirArchivos, GuardarComo, Guardar, NuevoArchivo, etc.) se mantienen igual
 root = Tk()
-root.resizable(FALSE,FALSE) # Con esto denegamos que se ajuste el tamaño de la ventana de largo y ancho
+root.resizable(TRUE,TRUE) # Con esto denegamos que se ajuste el tamaño de la ventana de largo y ancho
 root.geometry("924x596") #definimos las dimesiones de la ventana
 root.title("Compilador HandTech") #Titulo de la ventana
 

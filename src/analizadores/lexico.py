@@ -38,16 +38,9 @@ def find_column_lex(input, token):
     
 #Manejo de errores para identifacodres mal formados.
 def t_error_IDENTIFICADOR(t):
-    r'\d+[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
+    r'\d+[a-zA-Z][a-zA-Z0-9]*'
     agregar_error_lexico(12,'Léxico','Identificador inválido',t.value,t.lineno,find_column_lex(t.lexer.lexdata,t))
     t.lexer.skip(len(t.value))
- 
-'''    
-def t_error_PUNTO(t):
-    r'\.'
-    agregar_error_lexico(13,'Léxico','No se esperaba ese caracter en esta posicion',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
-    t.lexer.skip(len(t.value))
-'''
 
 def t_error_NUMERO_ENTERO(t):
     r'[+-]{2,}\d+'
@@ -58,13 +51,6 @@ def t_error_NUMERO_DECIMAL(t):
     r'\d+([\.]{2,}\d+[\.|\d]*)+ | \d+\.\d+(\.+\d+)+ | \.+\d+(\.|\d)* | (\d?\.\.\d)+ | \d+\.(?!\d)'
     agregar_error_lexico(13,'Léxico','Formato de número decimal invalido',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
     t.lexer.skip(len(t.value))
-
-# Regla de manejo de errores para caracteres sueltos no reconocidos
-def t_error_CHARACTER(t):
-    r'\b[a-zA-Z_ñÑ]\b'
-    agregar_error_lexico(15, 'Léxico', 'Carácter no esperado en esta posición', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
-    t.lexer.skip(1)
-
     
 #Manejo de errores para cualquier caracter no reconocido
 def t_error(t):
@@ -196,7 +182,7 @@ reserved = {
 }
 
 # Lista de subcadenas de palabras reservadas
-partial_reserved = {word[:i] for word in reserved for i in range(1, len(word))}
+partial_reserved = {word[:i] for word in reserved for i in range(2, len(word))}
 
 # Diccionario de descripciones para palabras reservadas
 descriptions = {
@@ -304,22 +290,7 @@ t_ignore_NEWLINE = r'\n'
 def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
-    
-def t_ID(t):
-    r'[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
-    if t.value in reserved:
-        t.type = reserved[t.value]
-    elif t.value in partial_reserved:
-        agregar_error_lexico(14, 'Léxico', f'Palabra reservada incompleta: {t.value}', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
-        t.lexer.skip(len(t.value))
-    else:
-        if t.value not in tabla_simbolos:
-            tabla_simbolos[t.value] = {
-                'Tipo': 'identificador',
-                'Valor': t.value,
-                'Descripción': 'Identificador'
-            }
-    return t
+
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
@@ -366,32 +337,56 @@ def t_FIN_DE_INSTRUCCION(t):
     r'\$'
     return t
 
-
+# Modificación en t_ID
+# Modificación en t_ID
+def t_ID(t):
+    r'[a-zA-Z][a-zA-Z0-9]*'
+    if t.value in reserved:
+        t.type = reserved[t.value]
+    else:
+        # Verifica si es subcadena de alguna palabra reservada
+        is_substring = False
+        for word in reserved:
+            if word.startswith(t.value) and t.value != word:
+                is_substring = True
+                break
+        if is_substring:
+            agregar_error_lexico(14, 'Léxico', 'Palabra reservada incompleta: prueba con {t.value}', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
+            t.lexer.skip(len(t.value))
+            return None
+        if t.value not in tabla_simbolos:
+            tabla_simbolos[t.value] = {
+                'Tipo': 'identificador',
+                'Valor': t.value,
+                'Descripción': 'Identificador'
+            }
+    return t
 
 lexer = lex.lex()
 
-'''
-codigo = """
-method run(){
-   ;Aquí mandas a llamar los métodos que llegues a crear
-   ;fng1 = 30$
-   ;degree a = 33.5$
-}
-"""
 
-lexer.input(codigo)
+# codigo = """
+# method run(){
+#    ;Aquí mandas a llamar los métodos que llegues a crear
+#    fng1 = 30$
+#    degree a = 33.5$
+# }
+# ñ
+# """
+
+# lexer.input(codigo)
 
 
-for tok in lexer:
-    if isinstance(tok.value, tuple):
-        print(f"Token: {tok.type}, Valor: {tok.value[0]}, Descripción: {tok.value[1]}")
-    else:
-        if tok.type in symbols_descriptions:
-            print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
-        else:
-            print(f"Token: {tok.type}, Valor: {tok.value}")
+# for tok in lexer:
+#     if isinstance(tok.value, tuple):
+#         print(f"Token: {tok.type}, Valor: {tok.value[0]}, Descripción: {tok.value[1]}")
+#     else:
+#         if tok.type in symbols_descriptions:
+#             print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
+#         else:
+#             print(f"Token: {tok.type}, Valor: {tok.value}")
 
 for i in range(len(tabla_errores)):
     print(tabla_errores[i])
 lexer.lineno = 1
-'''    
+   

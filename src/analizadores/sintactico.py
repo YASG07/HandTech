@@ -444,8 +444,7 @@ def p_errorFuncion6(prod):
     prod[0] = "Error al construir una función"
 def p_errorFuncion7(prod):
     '''
-    funcion : method ID LPARENT RPARENT bloque 
-            | method ID LPARENT tipo error RPARENT bloque   
+    funcion : method ID LPARENT tipo error RPARENT bloque   
     '''
     #agregar error sintactico: Se espera un identificador válido entre parentesis
     prod[0] = "Error al construir una función"
