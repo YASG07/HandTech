@@ -567,6 +567,7 @@ def p_errorInstruccion2(prod):
     '''
     #agregar error sintactico: Caracter incorrecto despues del punto, se espera mov, stop, etc.
     prod[0] = "Error al escribir la instrucción"
+    
 def p_errorInstruccion3(prod):
     '''
     instruccion : parte error mov LPARENT expression RPARENT FIN_DE_INSTRUCCION
@@ -577,6 +578,7 @@ def p_errorInstruccion3(prod):
     '''
     #agregar error sintactico: A donde se habrá ido el punto
     prod[0] = "Error al escribir la instrucción"
+    
 def p_errorInstruccion4(prod):
     '''
     instruccion : parte DOT mov LPARENT expression RPARENT error
@@ -592,6 +594,7 @@ def p_errorInstruccion4(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Me pregunto que será del sentinela ($)
     prod[0] = "Error al escribir la instrucción"
+
 def p_errorInstruccion5(prod):
     '''
     instruccion : parte DOT mov error expression RPARENT FIN_DE_INSTRUCCION
@@ -604,6 +607,7 @@ def p_errorInstruccion5(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Falta parentesis de inicio (
     prod[0] = "Error al escribir la instrucción"
+
 def p_errorInstruccion6(prod):
     '''
     instruccion : parte DOT mov LPARENT expression error FIN_DE_INSTRUCCION
@@ -616,6 +620,7 @@ def p_errorInstruccion6(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Falta parentesis de fin )
     prod[0] = "Error al escribir la instrucción"
+
 def p_errorInstruccion7(prod):
     '''
     instruccion : parte DOT mov LPARENT error RPARENT FIN_DE_INSTRUCCION
@@ -627,6 +632,7 @@ def p_errorInstruccion7(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Se espera un valor adecuado entre parentesis
     prod[0] = "Error al escribir la instrucción"
+
 def p_errorInstruccion8(prod):
     '''
     instruccion : return error FIN_DE_INSTRUCCION 
@@ -635,6 +641,7 @@ def p_errorInstruccion8(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Valor incorrecto cerca de import/return
     prod[0] = "Error al escribir la instrucción"
+
 def p_errorInstruccion9(prod):
     '''
     instruccion : error LPARENT expression RPARENT FIN_DE_INSTRUCCION
@@ -653,14 +660,18 @@ def p_errorAsginacion1(prod):
                | ID ASSIGN expression error
     '''
     #agregar error sintactico: Vuelve sentinela ($) nos haces falta
+    agregar_error_sintactico(4,'Sintactico','Ausencia del sentinela $',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error al escribir una declaración"
+    
 def p_errorAsginacion2(prod):
     '''
     asignacion : error ID ASSIGN expression FIN_DE_INSTRUCCION
                | error ID FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Tipo dato requerido
+    agregar_error_sintactico(4,'Sintactico','Tipo de dato requerido',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error al escribir una declaración"
+    
 def p_errorAsginacion3(prod):
     '''
     asignacion : tipo error ASSIGN expression FIN_DE_INSTRUCCION
@@ -668,20 +679,25 @@ def p_errorAsginacion3(prod):
                | error ASSIGN expression FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Escriba un identificador válido
+    agregar_error_sintactico(4,'Sintactico','Escriba un IDENTIFICADOR válido',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error al escribir una declaración"
+    
 def p_errorAsginacion4(prod):
     '''
     asignacion : tipo ID error expression FIN_DE_INSTRUCCION
                | ID error expression FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Falta '=' cerca de identificador
+    agregar_error_sintactico(4,'Sintactico','Falta el = cerca del identificador',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error al escribir una declaración"
+    
 def p_errorAsginacion5(prod):
     '''
     asignacion : tipo ID ASSIGN error FIN_DE_INSTRUCCION
                | ID ASSIGN error FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Falta el valor correspondiente a la variable
+    agregar_error_sintactico(4,'Sintactico','Escriba un IDENTIFICADOR válido',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error al escribir una declaración"
 
 #endregion: error en asignacion

@@ -208,7 +208,7 @@ def imprimir_errores():
         texto_error += f"Tipo: {error['Tipo']},"
         texto_error += f"Descripción: {error['Descripción']},"
         texto_error += f"Valor: {error['Valor']},"
-        texto_error += f"Linea: {error['Linea']},"
+        texto_error += f"Linea: {error['Linea']}\n"
         texto_error += f"Columna: {error['columna']}\n"
 
         scrollAnalisis.insert(INSERT, texto_error)
