@@ -362,26 +362,26 @@ def t_ID(t):
 lexer = lex.lex()
 
 
-codigo = """
-method run(){
-   ;Aquí mandas a llamar los métodos que llegues a crear
-   fng1 = 30$
-   degree a = 33.5$
-}
-ñ
-"""
+# codigo = """
+# method run(){
+#    ;Aquí mandas a llamar los métodos que llegues a crear
+#    fng1 = 30$
+#    degree a = 33.5$
+# }
+# ñ
+# """
 
-lexer.input(codigo)
+# lexer.input(codigo)
 
 
-for tok in lexer:
-    if isinstance(tok.value, tuple):
-        print(f"Token: {tok.type}, Valor: {tok.value[0]}, Descripción: {tok.value[1]}")
-    else:
-        if tok.type in symbols_descriptions:
-            print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
-        else:
-            print(f"Token: {tok.type}, Valor: {tok.value}")
+# for tok in lexer:
+#     if isinstance(tok.value, tuple):
+#         print(f"Token: {tok.type}, Valor: {tok.value[0]}, Descripción: {tok.value[1]}")
+#     else:
+#         if tok.type in symbols_descriptions:
+#             print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
+#         else:
+#             print(f"Token: {tok.type}, Valor: {tok.value}")
 
 for i in range(len(tabla_errores)):
     print(tabla_errores[i])
