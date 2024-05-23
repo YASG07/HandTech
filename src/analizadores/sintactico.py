@@ -2,10 +2,11 @@
 
 #imports
 import ply.yacc as yacc
-
+import ply.lex as lex
 from lexico import tokens,obtener_errores_lexicos
 
 tabla_errores_sintacticos = []
+
 def agregar_error_sintactico(id,error_type,error_description, value, line, column):
     tabla_errores_sintacticos.append({
         'Indice':id,
@@ -17,6 +18,7 @@ def agregar_error_sintactico(id,error_type,error_description, value, line, colum
     })
 
 def obtener_errores_sintactico():
+    global tabla_errores_sintacticos
     return tabla_errores_sintacticos
 
 # Función para encontrar la columna del token en la línea
@@ -29,9 +31,11 @@ def find_column(input, token,n):
         return 1 
     return column
 
-def reiniciar_analizador_sintactico():
+def reiniciar_analizador_sintactico(lexer):
     global tabla_errores
     tabla_errores = []
+    lexer.lineno = 1
+    lexer.lexpos = 0
 
 
 precedence = (
@@ -498,7 +502,7 @@ def p_errorFuncion6(prod):
     funcion : method ID LPARENT error ID RPARENT bloque   
     '''
     #agregar error sintactico: Se espera un tipo de dato entre parentesis
-    agregar_error_sintactico(2,'Sintactico','Se espera un tipo de dato entre ()',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(2,'Sintactico','Se espera un tipo de dato entre ()',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir una función"
     
 def p_errorFuncion7(prod):
@@ -506,7 +510,7 @@ def p_errorFuncion7(prod):
     funcion : method ID LPARENT tipo error RPARENT bloque   
     '''
     #agregar error sintactico: Se espera un identificador válido entre parentesis
-    agregar_error_sintactico(2,'Sintactico','Se espera un IDENTIFICADOR valido entre ()',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(2,'Sintactico','Se espera un IDENTIFICADOR valido entre ()',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir una función"
 
 #endregion: error al definir una función
@@ -517,14 +521,14 @@ def p_errorBloque1(prod):
     bloque : error listaInstruccion RKEY
     '''
     #agregar error sintactico: falta llave de inicio {
-    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de inicio {',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de inicio {',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en el bloque de código"
 def p_errorBloque2(prod):
     '''
     bloque : LKEY listaInstruccion error
     '''
     #agregar error sintactico: falta llave de fin }
-    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de fin }',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de fin }',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en el bloque de código"
 def p_errorBloque3(prod):
     '''
@@ -538,14 +542,14 @@ def p_errorBloque4(prod):
     bloque : LKEY error 
     '''
     #agregar error sintactico: Falta llave de fin }
-    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de fin }',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de fin }',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en el bloque de código"
 def p_errorBloque5(prod):
     '''
     bloque : error RKEY 
     '''
     #agregar error sintactico: Falta llave de inicio {
-    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de incio {',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de incio {',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en el bloque de código"
 #endregion: error al definir un bloque de código
 
@@ -560,7 +564,7 @@ def p_errorInstruccion1(prod):
     '''
                 
     #agregar error sintactico: Caracter incorrecto antes del punto, se espera fng1, wrist, etc.
-    agregar_error_sintactico(8,'Sintactico','Caracter incorrecto antes del punto',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(8,'Sintactico','Caracter incorrecto antes del punto',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
     
 def p_errorInstruccion2(prod):
@@ -571,7 +575,7 @@ def p_errorInstruccion2(prod):
                 | parte DOT error LPARENT RPARENT FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Caracter incorrecto despues del punto, se espera mov, stop, etc.
-    agregar_error_sintactico(8,'Sintactico','Caracter incorrecto depues del punto',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(8,'Sintactico','Caracter incorrecto depues del punto',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
     
 def p_errorInstruccion3(prod):
@@ -583,7 +587,7 @@ def p_errorInstruccion3(prod):
                 | parte error stop LPARENT RPARENT FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: A donde se habrá ido el punto
-    agregar_error_sintactico(8,'Sintactico','Ausencia del .',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(8,'Sintactico','Ausencia del .',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
     
 def p_errorInstruccion4(prod):
@@ -601,17 +605,17 @@ def p_errorInstruccion4(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Me pregunto que será del sentinela ($)
     if len(prod) == 8:
-        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[7],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[7],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 10:
-        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[9],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[9],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 6:
-        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 7:
-        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 3:
-        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 4:
-        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Ausencia del sentinela ($)',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
 
 def p_errorInstruccion5(prod):
@@ -626,9 +630,9 @@ def p_errorInstruccion5(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Falta parentesis de inicio (
     if len(prod) == 6:
-        agregar_error_sintactico(8,'Sintactico','Falta parentesis de inicio (',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Falta parentesis de inicio (',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     else:
-        agregar_error_sintactico(8,'Sintactico','Falta parentesis de inicio (',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Falta parentesis de inicio (',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
 
 def p_errorInstruccion6(prod):
@@ -643,13 +647,13 @@ def p_errorInstruccion6(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Falta parentesis de fin )
     if len(prod) == 8:
-        agregar_error_sintactico(8,'Sintactico','Falta parentesis de fin )',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Falta parentesis de fin )',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 10:
-        agregar_error_sintactico(8,'Sintactico','Falta parentesis de fin )',prod[8],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Falta parentesis de fin )',prod[8],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 6:
-        agregar_error_sintactico(8,'Sintactico','Falta parentesis de fin )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Falta parentesis de fin )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 7:
-        agregar_error_sintactico(8,'Sintactico','Falta parentesis de fin )',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Falta parentesis de fin )',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
 
 def p_errorInstruccion7(prod):
@@ -663,11 +667,11 @@ def p_errorInstruccion7(prod):
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Se espera un valor adecuado entre parentesis
     if len(prod) == 8:
-        agregar_error_sintactico(8,'Sintactico','Se espera un valor adecuado entre parentesis',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Se espera un valor adecuado entre parentesis',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 10:
-        agregar_error_sintactico(8,'Sintactico','Se espera un valor adecuado entre parentesis',"{prod[5]}, {prod[7]}",prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Se espera un valor adecuado entre parentesis',"{prod[5]}, {prod[7]}",prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 6:
-        agregar_error_sintactico(8,'Sintactico','Se espera un valor adecuado entre parentesis',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(8,'Sintactico','Se espera un valor adecuado entre parentesis',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
 
 def p_errorInstruccion8(prod):
@@ -677,7 +681,7 @@ def p_errorInstruccion8(prod):
     '''
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Valor incorrecto cerca de import/return
-    agregar_error_sintactico(8,'Sintactico','Valor incorrecto cerca de import/return',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(8,'Sintactico','Valor incorrecto cerca de import/return',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
 
 def p_errorInstruccion9(prod):
@@ -686,7 +690,7 @@ def p_errorInstruccion9(prod):
     '''
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Se espera 'wait' cerca de ()
-    agregar_error_sintactico(8,'Sintactico',"Se espera 'wait' cerca de ()",prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(8,'Sintactico',"Se espera 'wait' cerca de ()",prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir la instrucción"
     
 #endregion: error en instrucciones
@@ -700,11 +704,11 @@ def p_errorAsginacion1(prod):
     '''
     #agregar error sintactico: Vuelve sentinela ($) nos haces falta
     if len(prod) == 4:
-        agregar_error_sintactico(4,'Sintactico','Ausencia del sentinela $',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Ausencia del sentinela $',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 5:
-        agregar_error_sintactico(4,'Sintactico','Ausencia del sentinela $',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Ausencia del sentinela $',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 6:
-        agregar_error_sintactico(4,'Sintactico','Ausencia del sentinela $',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Ausencia del sentinela $',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una declaración"
     
 def p_errorAsginacion2(prod):
@@ -713,7 +717,7 @@ def p_errorAsginacion2(prod):
                | error ID FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Tipo dato requerido
-    agregar_error_sintactico(4,'Sintactico','Tipo de dato requerido',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(4,'Sintactico','Tipo de dato requerido',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una declaración"
     
 def p_errorAsginacion3(prod):
@@ -724,9 +728,9 @@ def p_errorAsginacion3(prod):
     '''
     #agregar error sintactico: Escriba un identificador válido
     if len(prod) == 5:
-        agregar_error_sintactico(4,'Sintactico','Escriba un IDENTIFICADOR válido',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Escriba un IDENTIFICADOR válido',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     else:
-        agregar_error_sintactico(4,'Sintactico','Escriba un IDENTIFICADOR válido',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Escriba un IDENTIFICADOR válido',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una declaración"
     
 def p_errorAsginacion4(prod):
@@ -736,9 +740,9 @@ def p_errorAsginacion4(prod):
     '''
     #agregar error sintactico: Falta '=' cerca de identificador
     if len(prod) == 6:
-        agregar_error_sintactico(4,'Sintactico','Falta el = cerca del identificador',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Falta el = cerca del identificador',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     else:
-        agregar_error_sintactico(4,'Sintactico','Falta el = cerca del identificador',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Falta el = cerca del identificador',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una declaración"
     
 def p_errorAsginacion5(prod):
@@ -748,9 +752,9 @@ def p_errorAsginacion5(prod):
     '''
     #agregar error sintactico: Falta el valor correspondiente a la variable
     if len(prod) == 6:
-        agregar_error_sintactico(4,'Sintactico','Falta el valor que contendra la variable',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Falta el valor que contendra la variable',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     else:
-        agregar_error_sintactico(4,'Sintactico','Falta el valor que contendra la variable',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(4,'Sintactico','Falta el valor que contendra la variable',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una declaración"
 
 #endregion: error en asignacion
@@ -765,13 +769,13 @@ def p_errorLlamada1(prod):
     '''
     #agregar error sintactico: Quisiera, que me hiceras mucha falta$
     if len(prod) == 5:
-        agregar_error_sintactico(5,'Sintactico','Ausencia del sentinela $',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Ausencia del sentinela $',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 6:
-        agregar_error_sintactico(5,'Sintactico','Ausencia del sentinela $',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Ausencia del sentinela $',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 7:
-        agregar_error_sintactico(5,'Sintactico','Ausencia del sentinela $',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Ausencia del sentinela $',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 8:
-        agregar_error_sintactico(5,'Sintactico','Ausencia del sentinela $',prod[7],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Ausencia del sentinela $',prod[7],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una instruccion"
 def p_errorLlamada2(prod):
     '''
@@ -781,7 +785,7 @@ def p_errorLlamada2(prod):
             | error DOT ID LPARENT expression RPARENT FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Falta un identificador válido al incio
-    agregar_error_sintactico(5,'Sintactico','Falta un IDENTIFICADOR valido al inicio',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(5,'Sintactico','Falta un IDENTIFICADOR valido al inicio',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una instruccion"
     
 def p_errorLlamada3(prod):
@@ -790,7 +794,7 @@ def p_errorLlamada3(prod):
             | ID error ID LPARENT expression RPARENT FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Se espera un punto entre identificadores
-    agregar_error_sintactico(5,'Sintactico','Ausencia del . entre identificadores',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(5,'Sintactico','Ausencia del . entre identificadores',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una instruccion"
     
 def p_errorLlamada4(prod):
@@ -799,7 +803,7 @@ def p_errorLlamada4(prod):
             | ID DOT error LPARENT expression RPARENT FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Falta un identificador válido después del punto
-    agregar_error_sintactico(5,'Sintactico','Falta un IDENTIFICADOR valido despues del punto',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(5,'Sintactico','Falta un IDENTIFICADOR valido despues del punto',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una instruccion"
     
 def p_errorLlamada5(prod):
@@ -811,9 +815,9 @@ def p_errorLlamada5(prod):
     '''
     #agregar error sintactico: Falta parentesis de inicio (
     if len(prod) == 5 | len(prod) == 6:
-        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de apartura (',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de apartura (',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     else:
-        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de apartura (',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de apartura (',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una instruccion"
     
 def p_errorLlamada6(prod):
@@ -825,13 +829,13 @@ def p_errorLlamada6(prod):
     '''
     #agregar error sintactico: Falta parentesis de fin )
     if len(prod) == 5:
-        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de cierre )',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de cierre )',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     if len(prod) == 6:
-        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de cierre )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de cierre )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     if len(prod) == 7:
-        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de cierre )',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de cierre )',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     if len(prod) == 8:
-        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de cierre )',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Falta de parentesis de cierre )',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una instruccion"
     
 def p_errorLlamada7(prod):
@@ -841,9 +845,9 @@ def p_errorLlamada7(prod):
     '''
     #agregar error sintactico: Se espera un valor adecuado
     if len(prod) == 6:
-        agregar_error_sintactico(5,'Sintactico','Se espera un valor adecuado',prod[3],prod.lineno(3),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Se espera un valor adecuado',prod[3],prod.lineno(3),find_column(prod.lexer.lexdata,prod,1))
     else:
-        agregar_error_sintactico(5,'Sintactico','Se espera un valor adecuado',prod[5],prod.lineno(3),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(5,'Sintactico','Se espera un valor adecuado',prod[5],prod.lineno(3),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al escribir una instruccion"
 
 #endregion: error en llamada
@@ -855,7 +859,7 @@ def p_errorCondicion1(prod):
               | error LPARENT operacionL RPARENT then bloque else bloque
     '''
     #agregar error sintactico: La palabara 'if' debe ir al inicio
-    agregar_error_sintactico(6,'Sintactico','La palabra if debe iniciar el bloque',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(6,'Sintactico','La palabra if debe iniciar el bloque',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura de la condición"
 def p_errorCondicion2(prod):
     '''
@@ -863,7 +867,7 @@ def p_errorCondicion2(prod):
               | if error operacionL RPARENT then bloque else bloque
     '''
     #agregar error sintactico: Falta parentesis de incio (
-    agregar_error_sintactico(6,'Sintactico','Falta del parentesis de apertura (',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(6,'Sintactico','Falta del parentesis de apertura (',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura de la condición"
     
 def p_errorCondicion3(prod):
@@ -872,7 +876,7 @@ def p_errorCondicion3(prod):
               | if LPARENT error RPARENT then bloque else bloque
     '''
     #agregar error sintactico: Se espera una operación lógica entre parentesis
-    agregar_error_sintactico(6,'Sintactico','Se espera una operacion logica entre ()',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(6,'Sintactico','Se espera una operacion logica entre ()',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura de la condición"
 def p_errorCondicion4(prod):
     '''
@@ -880,7 +884,7 @@ def p_errorCondicion4(prod):
               | if LPARENT operacionL error then bloque else bloque
     '''
     #agregar error sintactico: Falta parentesis de fin )
-    agregar_error_sintactico(6,'Sintactico','Falta del parentesis de cierre )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(6,'Sintactico','Falta del parentesis de cierre )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura de la condición"
     
 def p_errorCondicion5(prod):
@@ -889,7 +893,7 @@ def p_errorCondicion5(prod):
               | if LPARENT operacionL RPARENT error bloque else bloque
     '''
     #agregar error sintactico: La palabra 'then' debe ir antes del primer bloque
-    agregar_error_sintactico(6,'Sintactico','La palabra then debe ir antes del primer {',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(6,'Sintactico','La palabra then debe ir antes del primer {',prod[5],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura de la condición"
     
 def p_errorCondicion6(prod):
@@ -898,7 +902,7 @@ def p_errorCondicion6(prod):
               | if LPARENT operacionL RPARENT then error else bloque
     '''
     #agregar error sintactico: Imposible construir el primer bloque
-    agregar_error_sintactico(6,'Sintactico','Imposible construir el primer bloque',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(6,'Sintactico','Imposible construir el primer bloque',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura de la condición"
     
 def p_errorCondicion7(prod):
@@ -906,7 +910,7 @@ def p_errorCondicion7(prod):
     condicion : if LPARENT operacionL RPARENT then bloque error bloque
     '''
     #agregar error sintactico: La palabra 'else' debe entre ambos bloques
-    agregar_error_sintactico(6,'Sintactico','La palabra else, debe estar entre ambos bloques',prod[7],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(6,'Sintactico','La palabra else, debe estar entre ambos bloques',prod[7],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura de la condición"
     
 def p_errorCondicion8(prod):
@@ -914,7 +918,7 @@ def p_errorCondicion8(prod):
     condicion : if LPARENT operacionL RPARENT then bloque else error
     '''
     #agregar error sintactico: imposible construir el segundo bloque
-    agregar_error_sintactico(6,'Sintactico','Imposible construir el segund bloque',prod[8],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(6,'Sintactico','Imposible construir el segund bloque',prod[8],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura de la condición"
     
 #endregion: error en condición
@@ -929,7 +933,7 @@ def p_errorCiclos1(prod):
           | error LPARENT TWPOINT operacionL TWPOINT RPARENT bloque
     '''
     #agregar error sintactico: Se espera 'while/for' al inicio
-    agregar_error_sintactico(7,'Sintactico','Se espera while/for al inicio',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(7,'Sintactico','Se espera while/for al inicio',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura del ciclo"
 def p_errorCiclos2(prod):
     '''
@@ -940,7 +944,7 @@ def p_errorCiclos2(prod):
           | for error TWPOINT operacionL TWPOINT RPARENT bloque
     '''
     #agregar error sintactico: Falta parentesis de inicio (
-    agregar_error_sintactico(7,'Sintactico','Falta del parentesis de apertura (',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+    agregar_error_sintactico(7,'Sintactico','Falta del parentesis de apertura (',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura del ciclo"
 def p_errorCiclos3(prod):
     '''
@@ -952,13 +956,13 @@ def p_errorCiclos3(prod):
     '''
     #agregar error sintactico: Falta parentesis de fin )
     if len(prod) == 5:
-        agregar_error_sintactico(7,'Sintactico','Falta del parentesis de cierre )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(7,'Sintactico','Falta del parentesis de cierre )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 8:
-        agregar_error_sintactico(7,'Sintactico','Falta del parentesis de cierre )',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(7,'Sintactico','Falta del parentesis de cierre )',prod[6],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 9:
-        agregar_error_sintactico(7,'Sintactico','Falta del parentesis de cierre )',prod[7],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(7,'Sintactico','Falta del parentesis de cierre )',prod[7],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     elif len(prod) == 10:
-        agregar_error_sintactico(7,'Sintactico','Falta del parentesis de cierre )',prod[8],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
+        agregar_error_sintactico(7,'Sintactico','Falta del parentesis de cierre )',prod[8],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error en la estructura del ciclo"
 
 #endregion: error en ciclos
@@ -1008,3 +1012,4 @@ yacc.errorlog = yacc.NullLogger()
 def analisisSintactico(src):
     resultado = parser.parse(src)
     print(resultado)
+
