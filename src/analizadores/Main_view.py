@@ -7,6 +7,7 @@ from sintactico import parser, yacc, tabla_errores_sintacticos
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
+from semantico import analizar, errores
 
 # Estructura Visual del compilador y funciones basicas
 
@@ -240,7 +241,28 @@ def imprimir_errores_sintacticos():
     tabla_errores_sintacticos.clear()
     scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
 
+def analisisSemantico():
+    cadena = scroll_text_widget.get_text()
+    if len(cadena) > 0:
+        try:
+            resultado = analizar(cadena)
+            print(resultado)
+            #imprimir_errores_semanticos()
+        except:
+            mb.showerror("Error al analizar")
+    else:
+        mb.showwarning("ERROR",'Debes escribir código')
+    lexer.lineno = 1
 
+def imprimir_errores_semanticos():
+    scrollAnalisis.config(state="normal")
+    scrollAnalisis.delete(1.0, END)
+    errores=""
+    for error in errores:
+        texto_error = f"Error:{errores['']}"
+    scrollAnalisis.insert(INSERT, texto_error)
+    errores.clear()
+    scrollAnalisis.config(state="disabled")
 
 def tablaEstatica():
     global tabla_window
@@ -382,7 +404,7 @@ menubar.add_cascade(label="File", menu=file)
 analisis = Menu(menubar, tearoff=0)   
 analisis.add_command(label="Lexico",command=analisisLexico)  
 analisis.add_command(label="Sintactico", command=analisisSintactico) 
-analisis.add_command(label="Semantico" ) 
+analisis.add_command(label="Semantico", command=analisisSemantico) 
 menubar.add_cascade(label="Analizar", menu=analisis)
 
 
