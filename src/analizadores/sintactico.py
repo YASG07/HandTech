@@ -3,7 +3,36 @@
 #imports
 import ply.yacc as yacc
 
-from lexico import tokens
+from lexico import tokens,obtener_errores_lexicos
+
+tabla_errores_sintacticos = []
+def agregar_error_sintactico(id,error_type,error_description, value, line, column):
+    tabla_errores_sintacticos.append({
+        'Indice':id,
+        'Tipo': error_type,
+        'Descripción': error_description,
+        'Valor': str(value),
+        'Linea': line,
+        'Columna': column
+    })
+
+def obtener_errores_sintactico():
+    return tabla_errores_sintacticos
+
+# Función para encontrar la columna del token en la línea
+def find_column(input, token,n):
+    last_cr = input.rfind('\n', 0, token.lexpos(n))
+    if last_cr < 0:
+        last_cr = 0
+    column = (token.lexpos(n) - last_cr)
+    if column == 0:
+        return 1 
+    return column
+
+def reiniciar_analizador_sintactico():
+    global tabla_errores
+    tabla_errores = []
+
 
 precedence = (
     ('right','ASSIGN'),
@@ -303,6 +332,7 @@ def p_errorPrograma1(prod):
              | error main
     '''
     #agregar error sintactico: estructura incorrecta prod[1] 1 es la posicion del simbolo error
+    agregar_error_sintactico(11,'Sintactico','Estrucutra incorrecta',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al cargar el programa"
 
 def p_errorPrograma2(prod):
@@ -310,6 +340,7 @@ def p_errorPrograma2(prod):
     programa : main error
     '''
     #agregar error sintactico: estructura incorrecta después de la función principal
+    agregar_error_sintactico(11,'Sintactico','Estrucutra incorrecta después de la funcion principal',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al cargar el programa"
 def p_errorPrograma3(prod):
     '''
@@ -317,38 +348,45 @@ def p_errorPrograma3(prod):
              | objeto error main
     '''
     #agregar error sintactico: estructura incorrecta entre la función principal y la declaración de objeto
+    agregar_error_sintactico(11,'Sintactico','Estrucutra incorrecta entre la funcion principal',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al cargar el programa"
 #endregion: error en la definicón del programa
+
 #error al definir el método principal (run)
 def p_errorMain1(prod):
     '''
     main : error run LPARENT RPARENT bloque
     '''
     #agregar error sintactico: Falta la palabra method al inicio
+    agregar_error_sintactico(1,'Sintactico','Falta la palabra method al inicio del programa',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir la función principal"
 def p_errorMain2(prod):
     '''
     main : method error LPARENT RPARENT bloque
     '''
     #agregar error sintactico: Falta la palabra run antes de ()
+    agregar_error_sintactico(1,'Sintactico','Ausencia de la palabra run antes de ()',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir la función principal"
 def p_errorMain3(prod):
     '''
     main : method run error RPARENT bloque
     '''
     #agregar error sintactico: Falta parentesis de incio (
+    agregar_error_sintactico(1,'Sintactico','Falta del parentisis de apartura (',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir la función principal"
 def p_errorMain4(prod):
     '''
     main : method run LPARENT error bloque
     '''
     #agregar error sintactico: Falta parentesis de fin )
+    agregar_error_sintactico(1,'Sintactico','Falta del parentisis de cierre )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir la función principal"
 def p_errorMain5(prod):
     '''
     main : method run LPARENT RPARENT error
     '''
     #agregar error sintactico: No se pudo construir el bloque
+    agregar_error_sintactico(1,'Sintactico','No se pudo construir el bloque','',1,1)
     prod[0] = "Error al construir la función principal"
 
 #endregion: error al definir el método principal (run) 
@@ -359,18 +397,21 @@ def p_errorObjeto1(prod):
     objeto : error ID bloque
     '''
     #agregar error sintactico: Falta la palabra mbm
+    agregar_error_sintactico(12,'Sintactico','Ausencia de palabra mbm',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir un objeto"
 def p_errorObjeto2(prod):
     '''
     objeto : mbm error bloque
     '''
     #agregar error sintactico: Se espera un identificador después de mbm
+    agregar_error_sintactico(12,'Sintactico','Se esperaba un IDENTIFICADOR despues de mbm',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir un objeto"
 def p_errorObjeto3(prod):
     '''
     objeto : mbm ID error
     '''
-    #agregar error sintactico: No se pudo construir el bloque 
+    #agregar error sintactico: No se pudo construir el bloque
+    agregar_error_sintactico(12,'Sintactico','Se esperaba un IDENTIFICADOR despues de mbm','',1,1)
     prod[0] = "Error al construir un objeto"
 
 def p_errorObjeto4(prod):
@@ -378,24 +419,29 @@ def p_errorObjeto4(prod):
     objeto : error ASSIGN objeto FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Falta la palabra export
+    agregar_error_sintactico(12,'Sintactico','Usencia de la palabra export',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir un objeto"
+    
 def p_errorObjeto5(prod):
     '''
     objeto : export error objeto FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Se espera '=' cerca de export
+    agregar_error_sintactico(12,'Sintactico','Se esperaba un = cerca de export',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir un objeto"
 def p_errorObjeto6(prod):
     '''
     objeto : export ASSIGN error FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Objeto no definido
+    agregar_error_sintactico(12,'Sintactico','Objeto no definido',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir un objeto"
 def p_errorObjeto7(prod):
     '''
     objeto : export ASSIGN objeto error
     '''
     #agregar error sintactico: Oh! sentinela ($) como te extraño
+    agregar_error_sintactico(12,'Sintactico','Usencia del sentinela ($)',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir un objeto"
 
 #endregion: error al definir un objeto 
@@ -407,6 +453,7 @@ def p_errorFuncion1(prod):
             | error ID LPARENT tipo ID RPARENT bloque 
     '''
     #agregar error sintactico: Falta la palabra method al inicio
+    agregar_error_sintactico(2,'Sintactico','Ausencia de la palabra method al inicio',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir una función"
 def p_errorFuncion2(prod):
     '''
@@ -414,6 +461,7 @@ def p_errorFuncion2(prod):
             | method error LPARENT tipo ID RPARENT bloque 
     '''
     #agregar error sintactico: Se espera un identificador valido después de 'method'
+    agregar_error_sintactico(2,'Sintactico','Se esperaba un IDENTIFICADOR despues de method',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir una función"
 def p_errorFuncion3(prod):
     '''
@@ -421,65 +469,80 @@ def p_errorFuncion3(prod):
             | method ID error tipo ID RPARENT bloque  
     '''
     #agregar error sintactico: Falta parentesis de inicio (
+    agregar_error_sintactico(2,'Sintactico','Ausencia del parentesis de apertura (',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir una función"
+    
 def p_errorFuncion4(prod):
     '''
     funcion : method ID LPARENT error bloque 
             | method ID LPARENT tipo ID error bloque  
     '''
     #agregar error sintactico: Falta parentesis de fin )
+    agregar_error_sintactico(2,'Sintactico','Ausencia del parentesis de cierre )',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata,prod,1))
     prod[0] = "Error al construir una función"
+    
 def p_errorFuncion5(prod):
     '''
     funcion : method ID LPARENT RPARENT error 
             | method ID LPARENT tipo ID RPARENT error  
     '''
     #agregar error sintactico: Imposible construir el bloque
+    agregar_error_sintactico(2,'Sintactico','Imposible contruir el bloque','',1,1)
     prod[0] = "Error al construir una función"
+    
 def p_errorFuncion6(prod):
     '''
     funcion : method ID LPARENT error ID RPARENT bloque   
     '''
     #agregar error sintactico: Se espera un tipo de dato entre parentesis
+    agregar_error_sintactico(2,'Sintactico','Se espera un tipo de dato entre ()',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error al construir una función"
+    
 def p_errorFuncion7(prod):
     '''
     funcion : method ID LPARENT tipo error RPARENT bloque   
     '''
     #agregar error sintactico: Se espera un identificador válido entre parentesis
+    agregar_error_sintactico(2,'Sintactico','Se espera un IDENTIFICADOR valido entre ()',prod[4],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error al construir una función"
 
 #endregion: error al definir una función
+
 #error al definir un bloque de código
 def p_errorBloque1(prod):
     '''
     bloque : error listaInstruccion RKEY
     '''
     #agregar error sintactico: falta llave de inicio {
+    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de inicio {',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error en el bloque de código"
 def p_errorBloque2(prod):
     '''
     bloque : LKEY listaInstruccion error
     '''
     #agregar error sintactico: falta llave de fin }
+    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de fin }',prod[3],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error en el bloque de código"
 def p_errorBloque3(prod):
     '''
     bloque : LKEY error RKEY
     '''
     #agregar error sintactico: Construcción del bloque incorrecta
+    agregar_error_sintactico(3,'Sintactico','Construcción del bloque incorrecta','',1,1)
     prod[0] = "Error en el bloque de código"
 def p_errorBloque4(prod):
     '''
     bloque : LKEY error 
     '''
     #agregar error sintactico: Falta llave de fin }
+    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de fin }',prod[2],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error en el bloque de código"
 def p_errorBloque5(prod):
     '''
     bloque : error RKEY 
     '''
     #agregar error sintactico: Falta llave de inicio {
+    agregar_error_sintactico(3,'Sintactico','Ausencia de la llave de incio {',prod[1],prod.lineno(1),find_column(prod.lexer.lexdata.prod,1))
     prod[0] = "Error en el bloque de código"
 #endregion: error al definir un bloque de código
 

@@ -337,23 +337,13 @@ def t_FIN_DE_INSTRUCCION(t):
     r'\$'
     return t
 
-# Modificación en t_ID
+
 # Modificación en t_ID
 def t_ID(t):
     r'[a-zA-Z][a-zA-Z0-9]*'
     if t.value in reserved:
         t.type = reserved[t.value]
     else:
-        # Verifica si es subcadena de alguna palabra reservada
-        is_substring = False
-        for word in reserved:
-            if word.startswith(t.value) and t.value != word:
-                is_substring = True
-                break
-        if is_substring:
-            agregar_error_lexico(14, 'Léxico', 'Palabra reservada incompleta: prueba con {t.value}', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
-            t.lexer.skip(len(t.value))
-            return None
         if t.value not in tabla_simbolos:
             tabla_simbolos[t.value] = {
                 'Tipo': 'identificador',
@@ -362,6 +352,15 @@ def t_ID(t):
             }
     return t
 
+# Agregar manejo de errores para palabras reservadas incompletas
+def t_error_RESERVED(t):
+    r'[a-zA-Z]+'
+    if t.value in partial_reserved and t.value not in reserved:
+        agregar_error_lexico(14, 'Léxico', f'Palabra reservada incompleta: {t.value}', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
+        t.lexer.skip(len(t.value))
+    else:
+        t.lexer.skip(1)
+        
 lexer = lex.lex()
 
 
