@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter import filedialog
+from tkinter import font
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox as mb
 from lexico import tokens, reserved, lexer, descriptions, tabla_errores
@@ -19,7 +20,7 @@ class ScrollTextWithLineNumbers(Frame):
         self.line_numbers.pack(side='left', fill='y')  # Empaqueta el widget en el lado izquierdo y lo hace llenar en la dirección y
 
         # Crear el widget de texto desplazable
-        self.text_widget = ScrolledText(self, width=105, height=10)
+        self.text_widget = ScrolledText(self, width=105, height=10, undo=True) 
         self.text_widget.pack(side='left', fill='both', expand=True)  # Empaqueta el widget en el lado izquierdo y lo hace llenar en ambas direcciones y expandir su tamaño
 
         # Crear la barra de desplazamiento
@@ -31,53 +32,89 @@ class ScrollTextWithLineNumbers(Frame):
         self.scrollbar.config(command=self.text_widget.yview)  # Configura el comando de la barra de desplazamiento
 
         # Asignar eventos a los widgets de texto
-        self.text_widget.bind_all('<Key>', self._on_text_change)  # Asigna el evento Key (tecla) al método _on_text_change
-        self.text_widget.bind('<Return>', self._on_text_change)  # Asigna el evento Return (retorno) al método _on_text_change
+        self.text_widget.bind('<KeyRelease>', self._on_text_change)
+        self.text_widget.bind('<MouseWheel>', self._on_text_change)
+        self.text_widget.bind('<MouseWheel>', self._on_text_change)
+
+#       self.text_widget.bind_all('<Key>', self._on_text_change)  # Asigna el evento Key (tecla) al método _on_text_change
+#        self.text_widget.bind('<Return>', self._on_text_change)  # Asigna el evento Return (retorno) al método _on_text_change
         self.text_widget.bind('<Button-4>', self._scroll_up)  # Asigna el evento Button-4 (rueda del mouse hacia arriba) al método _scroll_up
         self.text_widget.bind('<Button-5>', self._scroll_down)  # Asigna el evento Button-5 (rueda del mouse hacia abajo) al método _scroll_down
-        
+
+        # Configurar el estilo de las palabras clave
+        self.text_widget.tag_configure("keyword", foreground="blue")
+
+        # Palabras clave a colorear
+        self.palabras_reservadas = {'if', 'then', 'else', 'for', 'while', 'stop', 'method', 'run', 'return',
+                               'console', 'export', 'import', 'mbm', 'arm', 'hand', 'rotate', 'fng1', 'fng2'
+                               ,'fng3', 'fng4', 'fng5', 'is', 'mov', 'force', 'sensor', 'weight', 'block', 'up'
+                               , 'down', 'linkage', 'wrist', 'piRad', 'degree', 'wait', 'false', 'true', 'int'
+                               , 'float', 'bool', 'none', 'empty', 'AND', 'NOT','(',')','{','}','[',']'}
+
         # Actualizar los números de línea
         self._update_line_numbers()
-        
+
+        # Fuente predeterminada
+        self.font_size = 10
+        self.font = font.Font(size=self.font_size)
+        self.text_widget.configure(font=self.font)
+        self.line_numbers.configure(font=self.font)
+
+
     def _scroll_text(self, *args):
         self.text_widget.yview(*args)
         self._update_line_numbers()
-        
-    def _on_text_change(self, event):
+
+    def _on_text_change(self, event=None):
         self._update_line_numbers()
-        
+        self._highlight_keywords()
+
     def _scroll_up(self, event):
         self.text_widget.yview_scroll(-1, 'units')
         self._update_line_numbers()
-        
+
     def _scroll_down(self, event):
         self.text_widget.yview_scroll(1, 'units')
         self._update_line_numbers()
         
+    def _on_text_change(self, event=None):
+            self._update_line_numbers()
+            return 'break'
+
     def _update_line_numbers(self):
-        lines = self.text_widget.get(1.0, 'end').split('\n')
-        line_numbers = '\n'.join(str(i) for i in range(1, len(lines)))
         self.line_numbers.config(state='normal')
-        self.line_numbers.delete(1.0, 'end')
-        self.line_numbers.insert(1.0, line_numbers)
+        self.line_numbers.delete('1.0', tk.END)
+
+        i = self.text_widget.index('@0,0')
+        while True:
+            dline = self.text_widget.dlineinfo(i)
+            if dline is None:
+                break
+            y = dline[1]
+            line_num = str(i).split('.')[0]
+            self.line_numbers.insert(tk.END, f"{line_num}\n")
+            i = self.text_widget.index(f"{i}+1line")
+
         self.line_numbers.config(state='disabled')
 
-    def get_text(self):
-        return self.text_widget.get(1.0, 'end-1c')
-    
-    def set_text(self, new_text):
-        self.text_widget.delete(1.0, 'end')  # Borra el texto existente
-        self.text_widget.insert('end', new_text)  # Inserta el nuevo texto al final del widget
-        self._update_line_numbers()  # Actualiza la numeración de líneas
+    def _highlight_keywords(self):
+            self.text_widget.tag_remove("keyword", "1.0", "end")  # Quitar el tag de palabras clave de todo el texto
+            for palabra in self.palabras_reservadas:
+                start_index = "1.0"
+                while True:
+                    start_index = self.text_widget.search(palabra, start_index, nocase=1, stopindex="end")
+                    if not start_index:
+                        break
+                    end_index = f"{start_index}+{len(palabra)}c"
+                    self.text_widget.tag_add("keyword", start_index, end_index)
+                    start_index = end_index
 
-    def clear_scroll_text(self):
-        self.text_widget.delete(1.0, 'end')  # Borra todo el texto en el widget
-        self._update_line_numbers()  # Actualiza la numeración de líneas
 
 # Variables para almacenar las referencias de las ventanas
 lexico_window = None
 sintactico_window = None
 tabla_window = None
+
 
 def cerrar_ventana(window):
     if window is not None:
@@ -358,8 +395,13 @@ scrollAnalisis = ScrolledText(root, width=100,  height=8, font = cambiar_tamaño
 scrollAnalisis.grid(row=5,column=0,padx=10,pady=10)
 
 def cambiar_tamaño_letra(size):
+    # Cambiar el tamaño de la fuente del widget de texto
     scroll_text_widget.text_widget.config(font=("Console", size))
-    
+    # Cambiar el tamaño de la fuente del widget de números de línea
+    scroll_text_widget.line_numbers.config(font=("Console", size))
+    # Actualizar los números de línea para reflejar el cambio de tamaño de la fuente
+    scroll_text_widget._update_line_numbers()
+
 
 menubar = Menu(root, background='#ff8000', foreground='black', activebackground='white', activeforeground='black')  
 file = Menu(menubar, tearoff=1)  
