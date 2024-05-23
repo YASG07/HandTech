@@ -1,7 +1,4 @@
-# imports
-from src.interfaz.ventanaCompilador import *
-
-def main():
-    exec()
-
-main()
+a = {
+    't': 'int'
+}
+print(a['t'])

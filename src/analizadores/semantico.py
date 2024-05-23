@@ -21,7 +21,7 @@ def analisis(asa):
     
     nodo = asa[0]
 
-    if nodo == 'prog-obj':
+    if nodo == 'programa':
         print(nodo)
         analisis(asa[1])
     elif nodo == 'bloque':
@@ -30,7 +30,7 @@ def analisis(asa):
             analisis(instruccion)
     elif nodo == 'asignacion':
         print(nodo)
-        tipoDato = asa[1][0]
+        tipoDato = asa[1]
         print(tipoDato)
         identificador = asa[2]
         print(identificador)
@@ -46,9 +46,13 @@ def analisis(asa):
         if type(valor) == str:
             if valor not in tablaSimbolos:
                 errores.append(f"Errores: variable '{valor}' no existe")
+            elif tipoDato != tablaSimbolos[valor]:
+                errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
+        elif type(valor).__name__ != tipoDato:
+            errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
     elif nodo == 'inicialización':
         print(nodo)
-        tipoDato = asa[1][0]
+        tipoDato = asa[1]
         print(tipoDato)
         identificador = asa[2]
         print(identificador)
@@ -62,11 +66,17 @@ def analisis(asa):
         print(identificador)
         valor = asa[2]
         print(valor)
+        tipoDato = tablaSimbolos[identificador]
+        print(tipoDato)
         if identificador not in tablaSimbolos:
             errores.append(f"Error: variable '{identificador}' no existe.")
-        elif type(valor) == str:
+        if type(valor) == str:
             if valor not in tablaSimbolos:
                 errores.append(f"Error: variable '{valor}' no existe.")
+            elif tipoDato != tablaSimbolos[valor]:
+                errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
+        elif type(valor).__name__ != tipoDato:
+            errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
     elif nodo == 'operacion':
         print(nodo)
         izq = asa[1]
@@ -78,14 +88,14 @@ def analisis(asa):
     elif nodo == 'grupo':
         print(nodo)
         analisis(asa[1])
-        
+     
 def analizar(src):
     destructor()
     asa = sintactico.parser.parse(src)
     analisis(asa)
     print(tablaSimbolos)
     if errores:
-        return "Errores detectados en:\n" + "\n".join(errores)
+        return "Errores semánticos detectados en:\n" + "\n".join(errores)
     return "Análisis semántico completado sin errores."
 
 def test(src):
@@ -95,7 +105,7 @@ src = '''
 method run(){
    int d$
    int t = d$
-   t = 5$
+   t = 0$
 }
 '''
 resultado = analizar(src)
