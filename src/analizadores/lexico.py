@@ -41,10 +41,10 @@ def t_error_IDENTIFICADOR(t):
     agregar_error_lexico(12,'Léxico','Identificador inválido',t.value,t.lineno,find_column_lex(t.lexer.lexdata,t))
     t.lexer.skip(len(t.value))
     
-def t_error_PUNTO(t):
-    r'\.'
-    agregar_error_lexico(13,'Léxico','No se esperaba ese caracter en esta posicion',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
-    t.lexer.skip(len(t.value))
+# def t_error_PUNTO(t):
+#     r'\.'
+#     agregar_error_lexico(13,'Léxico','No se esperaba ese caracter en esta posicion',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
+#     t.lexer.skip(len(t.value))
 
 def t_error_NUMERO_ENTERO(t):
     r'[+-]{2,}\d+'
@@ -54,14 +54,7 @@ def t_error_NUMERO_ENTERO(t):
 def t_error_NUMERO_DECIMAL(t):
     r'\d+([\.]{2,}\d+[\.|\d]*)+ | \d+\.\d+(\.+\d+)+ | \.+\d+(\.|\d)* | (\d?\.\.\d)+ | \d+\.(?!\d)'
     agregar_error_lexico(13,'Léxico','Formato de número decimal invalido',t.value,t.lineno,find_column_lex(t.lexer.lexdata, t))
-    t.lexer.skip(len(t.value))
-
-# Regla de manejo de errores para caracteres sueltos no reconocidos
-def t_error_CHARACTER(t):
-    r'\b[a-zA-Z_ñÑ]\b'
-    agregar_error_lexico(15, 'Léxico', 'Carácter no esperado en esta posición', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
-    t.lexer.skip(1)
-
+    t.lexer.skip(len(t.value)) 
     
 #Manejo de errores para cualquier caracter no reconocido
 def t_error(t):
@@ -192,9 +185,6 @@ reserved = {
     'NOT':'NOT'
 }
 
-# Lista de subcadenas de palabras reservadas
-partial_reserved = {word[:i] for word in reserved for i in range(1, len(word))}
-
 # Diccionario de descripciones para palabras reservadas
 descriptions = {
     'if': 'Condición de control para la ejecución condicional de instrucciones',
@@ -302,21 +292,6 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
     
-def t_ID(t):
-    r'[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
-    if t.value in reserved:
-        t.type = reserved[t.value]
-    elif t.value in partial_reserved:
-        agregar_error_lexico(14, 'Léxico', f'Palabra reservada incompleta: {t.value}', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
-        t.lexer.skip(len(t.value))
-    else:
-        if t.value not in tabla_simbolos:
-            tabla_simbolos[t.value] = {
-                'Tipo': 'identificador',
-                'Valor': t.value,
-                'Descripción': 'Identificador'
-            }
-    return t
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
@@ -363,7 +338,34 @@ def t_FIN_DE_INSTRUCCION(t):
     r'\$'
     return t
 
+# Modificación en t_ID
+def t_ID(t):
+    r'[a-zA-Z_ñÑ][a-zA-Z0-9_ñÑ]*'
+    if t.value in reserved:
+        t.type = reserved[t.value]
+    elif t.value in partial_reserved:
+        agregar_error_lexico(14, 'Léxico', f'Palabra reservada incompleta: {t.value}', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
+        t.lexer.skip(len(t.value))
+    else:
+        if t.value not in tabla_simbolos:
+            tabla_simbolos[t.value] = {
+                'Tipo': 'identificador',
+                'Valor': t.value,
+                'Descripción': 'Identificador'
+            }
+    return t
 
+
+# Lista de subcadenas de palabras reservadas
+partial_reserved = {word[:i] for word in reserved for i in range(2, len(word))}
+
+
+# Regla para manejar caracteres individuales no reconocidos
+def t_CHARACTER(t):
+    r'\b[a-zA-Z_ñÑ]\b'
+    if t.value not in reserved:
+        agregar_error_lexico(15, 'Léxico', 'Carácter no esperado en esta posición', t.value, t.lineno, find_column_lex(t.lexer.lexdata, t))
+    t.lexer.skip(1)
 
 lexer = lex.lex()
 
@@ -371,8 +373,9 @@ codigo = """
 method run(){
    ;Aquí mandas a llamar los métodos que llegues a crear
    ;fng1 = 30$
-   degree a = 33.5$
+   int t = 33.5$
 }
+a
 """
 
 
@@ -387,6 +390,7 @@ for tok in lexer:
             print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
         else:
             print(f"Token: {tok.type}, Valor: {tok.value}")
+
 
 for i in range(len(tabla_errores)):
     print(tabla_errores[i])
