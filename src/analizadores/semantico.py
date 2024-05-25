@@ -2,11 +2,41 @@
 
 #imports
 import sintactico
-import lexico
+from lexico import tokens,obtener_errores_lexicos
 
 #variable tablaSimbolos y lista de errores
 tablaSimbolos = {}
 errores = []
+
+# manejo de errores
+def agregar_error_semantico(id,error_type,error_description,value,line,column):
+    errores.append({
+        'Indice': id,
+        'Tipo': error_type,
+        'Descripcion': error_description,
+        'Valor': str(value),
+        'Linea': line,
+        'Columna': column,
+    })#agrega un error a la lista de errores
+
+def obtener_errores_semanticos():
+    global errores
+    return errores #devuelve los errores encontrados
+
+def find_column(input,token,n):
+    last_cr = input.rfind('\n',0,token.lexpos(n))
+    if last_cr < 0:
+        last_cr = 0
+    column = (token.lexpos(n) - last_cr)
+    if column == 0:
+        return 1
+    return column #devuele la columna donde se encontró el error
+
+def reiniciar_analizador_semantico(lexer):
+    destructor()
+    lexer.lineno = 1
+    lexer.lexpos = 0
+#endregion manejo de errores
 
 #metodo para limpiar ambos parametros
 def destructor():
@@ -24,6 +54,12 @@ def analisis(asa):
     if nodo == 'programa':
         print(nodo)
         analisis(asa[1])
+    elif nodo == 'objeto':
+        print(nodo)
+        analisis(asa[2])
+    elif nodo == 'funcion':
+        print(nodo)
+        analisis(asa[2])
     elif nodo == 'bloque':
         print(nodo)
         for instruccion in asa[1]:
@@ -41,6 +77,7 @@ def analisis(asa):
         else:
             if identificador == valor:
                 errores.append(f"Errores: variable '{identificador}' ya existe")
+                return
             else:
                 tablaSimbolos[identificador] = tipoDato
         if type(valor) == str:
@@ -103,9 +140,7 @@ def test(src):
 
 src = '''
 method run(){
-   int d$
-   int t = d$
-   t = 0$
+   int t = t$
 }
 '''
 resultado = analizar(src)

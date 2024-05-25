@@ -57,6 +57,8 @@ def p_programa(prod):
              | objeto main
              | programa funcion
              | funcion programa
+             | objeto programa
+             | programa objeto
     '''
     if len(prod) == 3:
         prod[0] = ('programa', prod[1], prod[2])
@@ -973,34 +975,6 @@ def p_error(prod):
         print('Programa invalido deber comenzar con el método principal o un objeto')
         #Aquí debe de ir el método de agregar errores
 #endregion métodos para gramaticas
-
-#arboles binarios
-class NodoMethod:
-    #constructor de la clase
-    def __init__(self, idMethod, tipo, idParam, bloque):
-        self.idMethod = idMethod
-        self.tipo = tipo
-        self.idParam = idParam 
-        self.bloque = bloque
-    #toString 
-    def __str__(self):
-        return f"method {self.idMethod} {self.tipo} {self.idParam} {{\n{self.bloque}\n}}"
-#endregion arboles de la barranca (binarios)
-
-#Método para imprimir en consola el árbol sintactico
-def print_tree(nodo, nivel=0):
-    if isinstance(nodo, tuple):
-        print("  " * nivel + nodo[0])
-        for child in nodo[1:]:
-            print_tree(child, nivel + 1)
-    elif isinstance(nodo, NodoMethod):
-        print("  " * nivel + "method")
-        print_tree(nodo.idMethod, nivel + 1)
-        print_tree(nodo.tipo, nivel + 1)
-        print_tree(nodo.idParam, nivel + 1)
-        print_tree(nodo.bloque, nivel + 1)
-    else:
-        print("  " * nivel + str(nodo))
 
 #instancia del analizador sintactico
 parser = yacc.yacc()
