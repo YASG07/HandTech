@@ -364,7 +364,7 @@ def t_ID(t):
         
 lexer = lex.lex()
 
-
+'''
 codigo = """
 method run(){
    ;Aquí mandas a llamar los métodos que llegues a crear
@@ -391,3 +391,4 @@ for i in range(len(tabla_errores)):
     print(tabla_errores[i])
 lexer.lineno = 1
    
+'''
