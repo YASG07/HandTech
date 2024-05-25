@@ -3,11 +3,11 @@ from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox as mb
 from lexico import tokens, reserved, lexer, descriptions, tabla_errores
-from sintactico import parser, yacc, tabla_errores_sintacticos
+from sintactico import parser, yacc
+from semantico import analizar, tablaSimbolos, errores
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
-from semantico import analizar, errores
 
 # Estructura Visual del compilador y funciones basicas
 
@@ -108,6 +108,7 @@ def mostrarAnalisisLexico2(tokens):
     text_area.config(state="disabled")  # Volver a deshabilitar la edición
 '''
 
+#---------------------------------Analisadores e impresion de errores
 def mostrarAnalisisLexico2(tokens):
     global lexico_window
     lexico_window = cerrar_ventana(lexico_window)  # Cerrar la ventana existente si hay una
@@ -166,16 +167,19 @@ def analisisLexico():
 def imprimir_errores():
     scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
     scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
-    for error in tabla_errores:
-        texto_error = f"Indice: {error['Indice']},"
-        texto_error += f"Tipo: {error['Tipo']},"
-        texto_error += f"Descripción: {error['Descripción']},"
-        texto_error += f"Valor: {error['Valor']},"
-        texto_error += f"Linea: {error['Linea']},"
-        texto_error += f"Columna: {error['columna']},"
+
+    for error in tabla_errores:                      
+       
+        texto_error  = f"Indice: {error['Indice']}, \t"
+        texto_error += f"Tipo: {error['Tipo']}, \t"
+        texto_error += f"Descripción: {error['Descripción']}, \t"
+        texto_error += f"Valor: {error['Valor']}, \t"
+        texto_error += f"Linea: {error['Linea']}, \t"
+        texto_error += f"Columna: {error['columna']}\n"      
 
         scrollAnalisis.insert(INSERT, texto_error)
     tabla_errores.clear()
+    
     scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición    
 
 def mostrarAnalisisSintactico2(data):
@@ -200,10 +204,7 @@ def mostrarAnalisisSintactico2(data):
     else:
         for item in data:
             text_area.insert(END, str(item) + '\n')
-    text_area.config(state="disabled") # Volver a deshabilitar la edición
-    for i in range(len(tabla_errores_sintacticos)):
-        print(tabla_errores_sintacticos[i])
-
+    text_area.config(state="disabled")  # Volver a deshabilitar la edición
     lexer.lineno = 1
     
 def analisisSintactico():
@@ -214,56 +215,111 @@ def analisisSintactico():
             mostrarAnalisisSintactico2(resultado)
             scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
             scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
-            scrollAnalisis.insert(END, "Analisis Correcto\n")
-            errores_sintacticos = (imprimir_errores_sintacticos())#(imprimir_errores_sintacticos())
-            scrollAnalisis.insert(END, errores_sintacticos)
+            scrollAnalisis.insert(END, "Analisis Correcto")
             scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
         except yacc.YaccError as e:
-            imprimir_errores(e)
+            imprimir_errores_sintacticos(e)
             mb.showerror("Error", str(e))
     else:
         mb.showwarning("ERROR", "Debes escribir código")
     lexer.lineno = 1
 
-def imprimir_errores_sintacticos():
+def imprimir_errores_sintacticos(exception):
     scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
     scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
-    errores = ""
-    for error in tabla_errores_sintacticos:
-        texto_error = f"Indice: {error['Indice']}, "
-        texto_error += f"Tipo: {error['Tipo']}, "
-        texto_error += f"Descripción: {error['Descripción']}, "
-        texto_error += f"Valor: {error['Valor']}, "
-        texto_error += f"Línea: {error['Linea']}, "
-        texto_error += f"Columna: {error['Columna']}\n"
-        errores += texto_error
-    scrollAnalisis.insert(INSERT, errores)
-    tabla_errores_sintacticos.clear()
+
+    # Obtener información del erro
+
+    # Formatear el mensaje de error
+    mensaje_error = str(exception)
+    # Mostrar el mensaje de error
+    scrollAnalisis.insert(END, mensaje_error + "\n")
     scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
+
+''' 
+def analisisSemantico():
+    cadena = scroll_text_widget.get_text()
+    if len(cadena) > 0:
+        resultado = analizar(cadena)
+        mostrarAnalisisSemantico2(resultado)
+    else:
+        mb.showwarning("ERROR", "Debes escribir código")
+'''
+def imprimir_errores_sintacticos(exception):
+    scrollAnalisis.config(state="normal")
+    scrollAnalisis.delete(1.0, END)
+    mensaje_error = str(exception)
+    scrollAnalisis.insert(END, mensaje_error + "\n")
+    scrollAnalisis.config(state="disabled")
+    
+            
+
+#-----------------------------------------------------------------------------------Prueba de semantico
+def mostrarAnalisisSemantico2(data):
+    semantico_window = Toplevel()
+    semantico_window.title("Análisis Semántico")
+    text_area = Text(semantico_window, wrap='word')
+    scrollbar = Scrollbar(semantico_window, command=text_area.yview)
+    text_area.configure(yscrollcommand=scrollbar.set)
+    text_area.pack(side='left', fill='both', expand=True)
+    scrollbar.pack(side='right', fill='y')
+    text_area.config(state="normal")
+    text_area.delete(1.0, END)
+    if isinstance(data, (int, float)):
+        text_area.insert(END, str(data) + '\n')
+    else:
+        for item in data:
+            text_area.insert(END, str(item) + '\n')
+    text_area.config(state="disabled")
+
+    scrollAnalisis.config(state="normal")
+    scrollAnalisis.delete(1.0, END)
+    for error in errores:
+        scrollAnalisis.insert(END, f"{error}\n")
+    scrollAnalisis.config(state="disabled") 
+
+def mostrarErroresSemanticos():
+    # Habilitar el área de texto para insertar texto
+    scrollAnalisis.config(state="normal")
+    # Limpiar el área de texto antes de insertar nuevos errores
+    scrollAnalisis.delete(1.0, END)
+    
+    # Si hay errores, iterar sobre ellos e insertarlos en el área de texto
+    if errores:
+        for error in errores:
+            scrollAnalisis.insert(END, f"{error}\n")
+    else:
+        # Si no hay errores, mostrar un mensaje indicando que no hay errores
+        scrollAnalisis.insert(END, "No se encontraron errores semánticos.\n")
+    
+    # Deshabilitar el área de texto para que no sea editable
+    scrollAnalisis.config(state="disabled")
 
 def analisisSemantico():
     cadena = scroll_text_widget.get_text()
     if len(cadena) > 0:
-        try:
-            resultado = analizar(cadena)
-            print(resultado)
-            #imprimir_errores_semanticos()
-        except:
-            mb.showerror("Error al analizar")
+        resultado = analizar(cadena)
+        mostrarAnalisisSemantico2(resultado)
+        mostrarErroresSemanticos()
     else:
-        mb.showwarning("ERROR",'Debes escribir código')
-    lexer.lineno = 1
+        mb.showwarning("ERROR", "Debes escribir código")
+#---------------------------------------------------------------------------------fin de pruebe de semantico  
+''' ............................Este si medio funciona
+def analisisSemantico():
+    scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+    scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
 
-def imprimir_errores_semanticos():
-    scrollAnalisis.config(state="normal")
-    scrollAnalisis.delete(1.0, END)
-    errores=""
-    for error in errores:
-        texto_error = f"Error:{errores['']}"
-    scrollAnalisis.insert(INSERT, texto_error)
-    errores.clear()
-    scrollAnalisis.config(state="disabled")
+    cadena = scroll_text_widget.get_text()
+    if len(cadena) > 0:
+        # Llamar al analizador semántico
+        resultado = analizar(cadena)
+        scrollAnalisis.insert(END, resultado)  # Mostrar el resultado en el ScrolledText
+    else:
+        mb.showwarning("ERROR", "Debes escribir código")
 
+    scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
+'''
+#-----------------------------------------
 def tablaEstatica():
     global tabla_window
     tabla_window = cerrar_ventana(tabla_window)
@@ -345,6 +401,102 @@ def cambiar_tamaño_letra(size):
     if scrollAnalisis:
         scrollAnalisis.config(font=("Console", size))
 
+#----------------------------------------------funciones de pruebas ----------------------------------------------------------------------
+# Función combinada de análisis léxico y sintáctico
+def analisis_completo():
+    # Análisis Léxico
+    scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+    scrollAnalisis.delete(1.0, tk.END)  # Borra el contenido actual del `ScrolledText`
+    scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
+    
+    cadena = scroll_text_widget.get_text()
+    if len(cadena) > 0:
+        # Inicializar tablas de errores
+        tabla_errores_lexicos = []
+        tabla_errores_sintacticos = []
+
+        # Análisis léxico
+        lexer.input(cadena)
+        a_tok = []
+        for tok in lexer:
+            a_tok.append((tok.type, tok.value, tok.lineno, tok.lexpos))
+            # Simular que tabla_errores se llena con errores léxicos
+            tabla_errores_lexicos.append({
+                'Indice': tok.lexpos,
+                'Tipo': 'Léxico',
+                'Descripción': f"Error léxico en {tok.value}",
+                'Valor': tok.value,
+                'Linea': tok.lineno,
+                'columna': tok.lexpos
+            })
+        
+        mostrarAnalisisLexico2(a_tok)
+        
+
+        # Análisis sintáctico
+        try:
+            resultado = parser.parse(cadena)
+            mostrarAnalisisSintactico2(resultado)
+            scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+            scrollAnalisis.insert(tk.END, "Análisis Correcto\n")
+            scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
+        except  yacc.YaccError as e:
+            tabla_errores_sintacticos.append({
+                'Indice': -1,
+                'Tipo': 'Sintáctico',
+                'Descripción': str(e),
+                'Valor': '',
+                'Linea': '',
+                'columna': ''
+            })
+            #imprimir_errores_sintacticos(e)
+            mb.showerror("Error", str(e))
+            
+
+        # Imprimir errores combinados
+        imprimir_errores()
+        imprimir_errores_sintacticos(e)
+        #imprimir_errores_combinados(scrollAnalisis, errores_lexicos=tabla_errores_lexicos, errores_sintacticos=tabla_errores_sintacticos)
+    else:
+        mb.showwarning("ERROR", "Debes escribir código")
+    lexer.lineno = 1
+
+#Funcion con los errores combinados 
+def imprimir_errores_combinados(errores=None, excepcion=None):
+    scrollAnalisis.config(state="normal")  # Habilitar edición del ScrolledText
+    scrollAnalisis.delete(1.0, tk.END)  # Borrar contenido actual
+
+    # Imprimir errores generales (léxicos, sintácticos, etc.)
+    if errores:
+        for error in errores:                      
+            texto_error  = f"Indice: {error['Indice']}, \t"
+            texto_error += f"Tipo: {error['Tipo']}, \t"
+            texto_error += f"Descripción: {error['Descripción']}, \t"
+            texto_error += f"Valor: {error['Valor']}, \t"
+            texto_error += f"Línea: {error['Linea']}, \t"
+            texto_error += f"Columna: {error['columna']}\n"
+            scrollAnalisis.insert(tk.END, texto_error)
+
+    # Imprimir excepción sintáctica si existe
+    if excepcion:
+        mensaje_error = str(excepcion)
+        scrollAnalisis.insert(tk.END, "Errores Sintácticos:\n")
+        scrollAnalisis.insert(tk.END, mensaje_error + "\n")
+
+    scrollAnalisis.config(state="disabled")  # Deshabilitar edición
+    
+# Función para compilar y analizar el contenido
+'''
+def compilar():
+  if tabla_errores == [ ]:
+    analisisLexico()
+    
+    analisisSintactico()
+'''
+
+def compilar():
+   compilar()
+#---------------------------------------------fin funciones de pruebas
 
 def Ventana2(data,title):
     vt2 = Tk()
@@ -422,6 +574,9 @@ font_menu.add_command(label="18", command=lambda: cambiar_tamaño_letra(18))
 font_menu.add_command(label="20", command=lambda: cambiar_tamaño_letra(20))
 
 menubar.add_cascade(label="Tamaño de la letra xd", menu=font_menu)
+
+menubar.add_radiobutton(label="Compilar", command=analisis_completo) #BOTON LEXICO SINTACTICO 
+
 
 root.config(menu=menubar)
 root.mainloop()
