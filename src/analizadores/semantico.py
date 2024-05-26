@@ -43,27 +43,39 @@ def destructor():
     tablaSimbolos.clear()
     errores.clear()
 
+#variables de control de lectura de asa
+longitud_asa = 0
+fase = 1
+asaCompleto = []
 #recibe un arbol de sintaxis abstracta (resultado de yacc.parse)
 def analisis(asa):
     print(asa)
     if not asa:
-        return
+        return #cancela la operación si no recibe un asa (arbol de sintaxis abstracta)
     
-    nodo = asa[0]
+    nodo = asa[0] #recupera el nombre del nodo
 
     if nodo == 'programa':
         print(nodo)
-        analisis(asa[1])
+        global asaCompleto #convierte la variable en una global
+        asaCompleto = asa #guarda el asa completo
+        global longitud_asa
+        longitud_asa = len(asa) #guarda la longitud del asa completo
+        global fase
+        analisis(asa[1]) #manda a ejecutar el método con el bloque como parametro
     elif nodo == 'objeto':
         print(nodo)
-        analisis(asa[2])
+        analisis(asa[2]) #manda a ejecutar el método con el bloque como parametro
     elif nodo == 'funcion':
         print(nodo)
-        analisis(asa[2])
+        analisis(asa[2]) #manda a ejecutar el método con el bloque como parametro
     elif nodo == 'bloque':
         print(nodo)
         for instruccion in asa[1]:
-            analisis(instruccion)
+            analisis(instruccion) #ejcuta el método para analizar cada instrucción del bloque
+        fase += 1 
+        if fase < longitud_asa: 
+            analisis(asaCompleto[fase]) #avanza al siguiente bloque si la fase no esta fuera de rango
     elif nodo == 'asignacion':
         print(nodo)
         tipoDato = asa[1]
@@ -73,17 +85,21 @@ def analisis(asa):
         valor = asa[3]
         print(valor)
         if identificador in tablaSimbolos:
+            #agregar_error_semantico(15,'Semántico',"variable '{identificador}' ya existe.",identificador,)
             errores.append(f"Error: variable '{identificador}' ya existe.")
         else:
             if identificador == valor:
+                #agregar_error_semantico(15,'Semántico',"variable '{identificador}' ya existe.",identificador,)
                 errores.append(f"Errores: variable '{identificador}' ya existe")
                 return
             else:
                 tablaSimbolos[identificador] = tipoDato
         if type(valor) == str:
             if valor not in tablaSimbolos:
+                #agregar_error_semantico(16,'Semántico',"variable '{valor}' no existe.",valor,)
                 errores.append(f"Errores: variable '{valor}' no existe")
             elif tipoDato != tablaSimbolos[valor]:
+                #agregar_error_semantico(17,'Semántico',"'{valor}' no puede ser convertido a '{tipoDato}'",valor,)
                 errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
         elif type(valor).__name__ != tipoDato:
             errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
@@ -94,6 +110,7 @@ def analisis(asa):
         identificador = asa[2]
         print(identificador)
         if identificador in tablaSimbolos:
+            #agregar_error_semantico(15,'Semántico',"variable '{identificador}' ya existe.",identificador,)
             errores.append(f"Error: variable '{identificador}' ya existe.")
         else:
             tablaSimbolos[identificador] = tipoDato
@@ -106,9 +123,11 @@ def analisis(asa):
         tipoDato = tablaSimbolos[identificador]
         print(tipoDato)
         if identificador not in tablaSimbolos:
+            #agregar_error_semantico(16,'Semántico',"variable '{identificador}' no existe.",identificador,)
             errores.append(f"Error: variable '{identificador}' no existe.")
         if type(valor) == str:
             if valor not in tablaSimbolos:
+                #agregar_error_semantico(16,'Semántico',"variable '{identificador}' no existe.",identificador,)
                 errores.append(f"Error: variable '{valor}' no existe.")
             elif tipoDato != tablaSimbolos[valor]:
                 errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
@@ -140,9 +159,15 @@ def test(src):
 
 src = '''
 method run(){
-   int t = t$
+   int t = 0$
+}
+mbm o {
+    int t = 0$
+}
+mbm abc {
+    int a = 0$
 }
 '''
-# resultado = analizar(src)
-# print(resultado)
+resultado = analizar(src)
+print(resultado)
 #test(src)
