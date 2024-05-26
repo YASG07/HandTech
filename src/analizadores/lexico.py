@@ -24,7 +24,7 @@ def agregar_error_lexico(error_index,error_type,error_description,value,line,col
         'Descripción': error_description,
         'Valor': value,
         'Linea': line,
-        'columna': column
+        'Columna': column
     })
     
 #Funcion para ecnotrar la coliman del token en la linea
@@ -133,7 +133,9 @@ tokens = [
     'float',
     'bool',
     'none',
-    'empty'
+    'empty',
+    'open',
+    'close'
 ]
 
 reserved = {
@@ -179,7 +181,9 @@ reserved = {
     'none':'none',
     'empty':'empty',
     'AND':'AND',
-    'NOT':'NOT'
+    'NOT':'NOT',
+    'open':'open',
+    'close':'close'
 }
 
 # Lista de subcadenas de palabras reservadas
@@ -230,6 +234,8 @@ descriptions = {
     'empty':'Utilizada para retornar un valor vacio',
     'AND': 'Y lógico',
     'NOT': 'Negación lógica',
+    'open': 'Palabra reservada que es utilizada para abrir la mano',
+    'close': 'Palabra reservada que es utilizada para cerrar la mano',
 }
 
 # Diccionario de descripciones para símbolos
@@ -364,31 +370,27 @@ def t_ID(t):
         
 lexer = lex.lex()
 
-'''
-codigo = """
-method run(){
-   ;Aquí mandas a llamar los métodos que llegues a crear
-   fng1 = 30$
-   degree a = 33.5$
-   sensor sensor1 = true$
-}
+# codigo = """
+# method run(){
+#    ;Aquí mandas a llamar los métodos que llegues a crear
+#    fng1 = 30$
+#    degree a = 33.5$
+#    sensor sensor1 = true$
+#    hand.open()$
+# }
 
-"""
+# """
 
-lexer.input(codigo)
+# lexer.input(codigo)
 
 
-for tok in lexer:
-    if isinstance(tok.value, tuple):
-        print(f"Token: {tok.type}, Valor: {tok.value[0]}, Descripción: {tok.value[1]}")
-    else:
-        if tok.type in symbols_descriptions:
-            print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
-        else:
-            print(f"Token: {tok.type}, Valor: {tok.value}")
+# for tok in lexer:
+#     if isinstance(tok.value, tuple):
+#         print(f"Token: {tok.type}, Valor: {tok.value[0]}, Descripción: {tok.value[1]}")
+#     else:
+#         if tok.type in symbols_descriptions:
+#             print(f"Token: {tok.type}, Valor: {tok.value}, Descripción: {symbols_descriptions[tok.type]}")
+#         else:
+#             print(f"Token: {tok.type}, Valor: {tok.value}")
 
-for i in range(len(tabla_errores)):
-    print(tabla_errores[i])
 lexer.lineno = 1
-   
-'''

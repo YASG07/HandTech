@@ -143,6 +143,6 @@ method run(){
    int t = t$
 }
 '''
-resultado = analizar(src)
-print(resultado)
+# resultado = analizar(src)
+# print(resultado)
 #test(src)
