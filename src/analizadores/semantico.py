@@ -177,6 +177,6 @@ method odb (){
     int a = 0$
 }
 '''
-resultado = analizar(src)
-print(resultado)
+# resultado = analizar(src)
+# print(resultado)
 #test(src)

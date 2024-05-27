@@ -135,7 +135,8 @@ tokens = [
     'none',
     'empty',
     'open',
-    'close'
+    'close',
+    'start'
 ]
 
 reserved = {
@@ -183,7 +184,8 @@ reserved = {
     'AND':'AND',
     'NOT':'NOT',
     'open':'open',
-    'close':'close'
+    'close':'close',
+    'start':'start'
 }
 
 # Lista de subcadenas de palabras reservadas
@@ -236,6 +238,7 @@ descriptions = {
     'NOT': 'Negación lógica',
     'open': 'Palabra reservada que es utilizada para abrir la mano',
     'close': 'Palabra reservada que es utilizada para cerrar la mano',
+    'start': 'Palabra reservada que es utilizada para regresar el brazo a la posición inicial'
 }
 
 # Diccionario de descripciones para símbolos
