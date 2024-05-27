@@ -205,6 +205,8 @@ def p_instruccion(prod):
                 | parte DOT mov LPARENT expression COMMA expression RPARENT FIN_DE_INSTRUCCION
                 | parte DOT force LPARENT expression RPARENT FIN_DE_INSTRUCCION
                 | wrist DOT rotate LPARENT expression RPARENT FIN_DE_INSTRUCCION
+                | hand DOT close LPARENT RPARENT FIN_DE_INSTRUCCION
+                | hand DOT open LPARENT RPARENT FIN_DE_INSTRUCCION
                 | wait LPARENT expression RPARENT FIN_DE_INSTRUCCION
                 | parte DOT stop LPARENT RPARENT FIN_DE_INSTRUCCION
                 | return FIN_DE_INSTRUCCION
@@ -559,6 +561,8 @@ def p_errorInstruccion1(prod):
                 | error DOT force LPARENT expression RPARENT FIN_DE_INSTRUCCION
                 | error DOT stop LPARENT RPARENT FIN_DE_INSTRUCCION
                 | error DOT rotate LPARENT expression RPARENT FIN_DE_INSTRUCCION
+                | error DOT close LPARENT RPARENT FIN_DE_INSTRUCCION
+                | error DOT open LPARENT RPARENT FIN_DE_INSTRUCCION
     '''
                 
     #agregar error sintactico: Caracter incorrecto antes del punto, se espera fng1, wrist, etc.
@@ -571,6 +575,7 @@ def p_errorInstruccion2(prod):
                 | parte DOT error LPARENT expression COMMA expression RPARENT FIN_DE_INSTRUCCION
                 | wrist DOT error LPARENT expression RPARENT FIN_DE_INSTRUCCION
                 | parte DOT error LPARENT RPARENT FIN_DE_INSTRUCCION
+                | hand DOT error LPARENT RPARENT FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: Caracter incorrecto despues del punto, se espera mov, stop, etc.
     agregar_error_sintactico(8,'Sintactico','Caracter incorrecto depues del punto',prod[3],prod.lineno(3),find_column(prod.lexer.lexdata,prod,3))
@@ -583,6 +588,8 @@ def p_errorInstruccion3(prod):
                 | parte error force LPARENT expression RPARENT FIN_DE_INSTRUCCION
                 | wrist error rotate LPARENT expression RPARENT FIN_DE_INSTRUCCION
                 | parte error stop LPARENT RPARENT FIN_DE_INSTRUCCION
+                | hand error close LPARENT RPARENT FIN_DE_INSTRUCCION
+                | hand error open LPARENT RPARENT FIN_DE_INSTRUCCION
     '''
     #agregar error sintactico: A donde se habrá ido el punto
     agregar_error_sintactico(8,'Sintactico','Ausencia del .',prod[2],prod.lineno(2),find_column(prod.lexer.lexdata,prod,2))
@@ -596,6 +603,8 @@ def p_errorInstruccion4(prod):
                 | wrist DOT rotate LPARENT expression RPARENT error
                 | wait LPARENT expression RPARENT error
                 | parte DOT stop LPARENT RPARENT error
+                | hand DOT close LPARENT RPARENT error
+                | hand DOT open LPARENT RPARENT error
                 | return error
                 | return expression error 
                 | import ID error
@@ -624,6 +633,8 @@ def p_errorInstruccion5(prod):
                 | wrist DOT rotate error expression RPARENT FIN_DE_INSTRUCCION
                 | wait error expression RPARENT FIN_DE_INSTRUCCION
                 | parte DOT stop error RPARENT FIN_DE_INSTRUCCION
+                | hand DOT close error RPARENT FIN_DE_INSTRUCCION
+                | hand DOT open error RPARENT FIN_DE_INSTRUCCION
     '''
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Falta parentesis de inicio (
@@ -641,6 +652,8 @@ def p_errorInstruccion6(prod):
                 | wrist DOT rotate LPARENT expression error FIN_DE_INSTRUCCION
                 | wait LPARENT expression error FIN_DE_INSTRUCCION
                 | parte DOT stop LPARENT error FIN_DE_INSTRUCCION
+                | hand DOT close LPARENT error FIN_DE_INSTRUCCION
+                | hand DOT open LPARENT error FIN_DE_INSTRUCCION
     '''
     #consulte la gramatica original para consultar la posición exacta del error
     #agregar error sintactico: Falta parentesis de fin )
