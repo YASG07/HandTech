@@ -8,6 +8,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 from semantico import analizar, errores
+import re
 
 # Estructura Visual del compilador y funciones basicas
 
@@ -33,13 +34,94 @@ class ScrollTextWithLineNumbers(Frame):
         self.scrollbar.config(command=self.text_widget.yview)  # Configura el comando de la barra de desplazamiento
 
         # Asignar eventos a los widgets de texto
-        self.text_widget.bind_all('<Key>', self._on_text_change)  # Asigna el evento Key (tecla) al método _on_text_change
+        self.text_widget.bind("<KeyRelease>", self.on_key_release)
+#        self.text_widget.bind('<Key>', self._on_text_change)  # Asigna el evento Key (tecla) al método _on_text_change
         self.text_widget.bind('<Return>', self._on_text_change)  # Asigna el evento Return (retorno) al método _on_text_change
         self.text_widget.bind('<Button-4>', self._scroll_up)  # Asigna el evento Button-4 (rueda del mouse hacia arriba) al método _scroll_up
         self.text_widget.bind('<Button-5>', self._scroll_down)  # Asigna el evento Button-5 (rueda del mouse hacia abajo) al método _scroll_down
         
         # Actualizar los números de línea
         self._update_line_numbers()
+
+#Intento de resaltar palabras en azul ---------------------------------------------------------------- 
+        self._create_tags()
+
+    def _create_tags(self):
+        # Crear etiquetas para los tokens y las palabras reservadas
+        self.text_widget.tag_configure("TOKEN", foreground="blue")
+        self.text_widget.tag_configure("RESERVED", foreground="orange")
+        self.text_widget.tag_configure("SYMBOL", foreground="red")
+        self.text_widget.tag_configure("COMMENT", foreground="gray52")
+
+    def on_key_release(self, event):
+            self.highlight_code()
+
+    def highlight_code(self):
+        code = self.text_widget.get("1.0", tk.END)
+        self.text_widget.mark_set("range_start", "1.0")
+
+        # Eliminar todas las etiquetas previas
+        for tag in self.text_widget.tag_names():
+            self.text_widget.tag_remove(tag, "1.0", tk.END)
+
+        # Resaltar palabras reservadas (insensible a mayúsculas/minúsculas)
+        for word in reserved:
+            start_index = "1.0"
+            while True:
+                start_index = self.text_widget.search(r'(?i)\b' + re.escape(word) + r'\b', start_index, tk.END, regexp=True)
+                if not start_index:
+                    break
+                end_index = f"{start_index}+{len(word)}c"
+                self.text_widget.tag_add("RESERVED", start_index, end_index)
+                start_index = end_index
+
+        # Resaltar tokens (insensible a mayúsculas/minúsculas)
+        for pattern in tokens:
+            regex = re.compile(r'(?i)\b' + pattern + r'\b')
+            for match in regex.finditer(code):
+                start_index = f"1.0 + {match.start()}c"
+                end_index = f"1.0 + {match.end()}c"
+                self.text_widget.tag_add("TOKEN", start_index, end_index)
+
+        # Resaltar símbolos
+        symbols = [r'\{', r'\}', r'\(', r'\)', r'\[', r'\]']
+        for symbol in symbols:
+            start_index = "1.0"
+            while True:
+                start_index = self.text_widget.search(symbol, start_index, tk.END, regexp=True)
+                if not start_index:
+                    break
+                end_index = f"{start_index}+1c"
+                self.text_widget.tag_add("SYMBOL", start_index, end_index)
+                start_index = end_index
+
+        # Resaltar comentarios de una sola línea
+        start_index = "1.0"
+        while True:
+            start_index = self.text_widget.search(';', start_index, tk.END)
+            if not start_index:
+                break
+            end_index = self.text_widget.search('\n', start_index, tk.END)
+            if not end_index:
+                end_index = tk.END
+            self.text_widget.tag_add("COMMENT", start_index, end_index)
+            start_index = end_index
+
+        # Resaltar comentarios de múltiples líneas
+        start_index = "1.0"
+        while True:
+            start_index = self.text_widget.search(r'<-', start_index, tk.END)
+            if not start_index:
+                break
+            end_index = self.text_widget.search(r'->', start_index, tk.END)
+            if not end_index:
+                end_index = tk.END
+            else:
+                end_index = f"{end_index}+2c"  # Incluir los caracteres '->' en el resaltado
+            self.text_widget.tag_add("COMMENT", start_index, end_index)
+            start_index = end_index
+#------------------------------------------------------------------------------------------------------
+
         
     def _scroll_text(self, *args):
         self.text_widget.yview(*args)
@@ -75,6 +157,7 @@ class ScrollTextWithLineNumbers(Frame):
     def clear_scroll_text(self):
         self.text_widget.delete(1.0, 'end')  # Borra todo el texto en el widget
         self._update_line_numbers()  # Actualiza la numeración de líneas
+
 
 # Variables para almacenar las referencias de las ventanas
 lexico_window = None
