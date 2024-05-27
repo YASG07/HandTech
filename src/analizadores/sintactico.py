@@ -51,17 +51,15 @@ def p_programa(prod):
     '''
     programa : main
              | objeto
-             | main objeto
-             | objeto main
              | programa funcion
              | funcion programa
              | objeto programa
              | programa objeto
     '''
     if len(prod) == 3:
-        prod[0] = ('programa', prod[1], prod[2])
+        prod[0] = prod[1] + [prod[2]]
     else:
-        prod[0] = ('programa', prod[1])
+        prod[0] = ['programa', prod[1]]
     
 #gramatica para método principal
 def p_main(prod):

@@ -42,6 +42,12 @@ def reiniciar_analizador_semantico(lexer):
 def destructor():
     tablaSimbolos.clear()
     errores.clear()
+    global longitud_asa
+    global fase
+    global asaCompleto
+    longitud_asa = 0
+    fase = 1
+    asaCompleto = []
 
 #variables de control de lectura de asa
 longitud_asa = 0
@@ -164,7 +170,10 @@ method run(){
 mbm o {
     int t = 0$
 }
-mbm abc {
+method abc (){
+    int a = 0$
+}
+method odb (){
     int a = 0$
 }
 '''
