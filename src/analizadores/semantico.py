@@ -92,23 +92,23 @@ def analisis(asa):
         print(valor)
         if identificador in tablaSimbolos:
             #agregar_error_semantico(15,'Semántico',"variable '{identificador}' ya existe.",identificador,)
-            errores.append(f"Error: variable '{identificador}' ya existe.")
+            errores.append(f"Error Semántico: variable '{identificador}' ya existe.")
         else:
             if identificador == valor:
                 #agregar_error_semantico(15,'Semántico',"variable '{identificador}' ya existe.",identificador,)
-                errores.append(f"Errores: variable '{identificador}' ya existe")
+                errores.append(f"Error Semántico: variable '{identificador}' ya existe")
                 return
             else:
                 tablaSimbolos[identificador] = tipoDato
         if type(valor) == str:
             if valor not in tablaSimbolos:
                 #agregar_error_semantico(16,'Semántico',"variable '{valor}' no existe.",valor,)
-                errores.append(f"Errores: variable '{valor}' no existe")
+                errores.append(f"Error Semántico: variable '{valor}' no existe")
             elif tipoDato != tablaSimbolos[valor]:
                 #agregar_error_semantico(17,'Semántico',"'{valor}' no puede ser convertido a '{tipoDato}'",valor,)
-                errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
+                errores.append(f"Error Semántico: '{valor}' no puede ser convertido a '{tipoDato}'")
         elif type(valor).__name__ != tipoDato:
-            errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
+            errores.append(f"Error Semántico: '{valor}' no puede ser convertido a '{tipoDato}'")
     elif nodo == 'inicialización':
         print(nodo)
         tipoDato = asa[1]
@@ -117,7 +117,7 @@ def analisis(asa):
         print(identificador)
         if identificador in tablaSimbolos:
             #agregar_error_semantico(15,'Semántico',"variable '{identificador}' ya existe.",identificador,)
-            errores.append(f"Error: variable '{identificador}' ya existe.")
+            errores.append(f"Error Semántico: variable '{identificador}' ya existe.")
         else:
             tablaSimbolos[identificador] = tipoDato
     elif nodo == 'asignacion_noTipo':
@@ -130,15 +130,15 @@ def analisis(asa):
         print(tipoDato)
         if identificador not in tablaSimbolos:
             #agregar_error_semantico(16,'Semántico',"variable '{identificador}' no existe.",identificador,)
-            errores.append(f"Error: variable '{identificador}' no existe.")
+            errores.append(f"Error Semántico: variable '{identificador}' no existe.")
         if type(valor) == str:
             if valor not in tablaSimbolos:
                 #agregar_error_semantico(16,'Semántico',"variable '{identificador}' no existe.",identificador,)
-                errores.append(f"Error: variable '{valor}' no existe.")
+                errores.append(f"Error Semántico: variable '{valor}' no existe.")
             elif tipoDato != tablaSimbolos[valor]:
-                errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
+                errores.append(f"Error Semántico: '{valor}' no puede ser convertido a '{tipoDato}'")
         elif type(valor).__name__ != tipoDato:
-            errores.append(f"Errores: '{valor}' no puede ser convertido a '{tipoDato}'")
+            errores.append(f"Error Semántico: '{valor}' no puede ser convertido a '{tipoDato}'")
     elif nodo == 'operacion':
         print(nodo)
         izq = asa[1]
@@ -166,17 +166,21 @@ def test(src):
 src = '''
 method run(){
    int t = 0$
+   int b = 5.15$
+   t=a$
+   int t$
 }
 mbm o {
-    int t = 0$
+    ;int t = 0$
 }
+
 method abc (){
-    int a = 0$
+    ;int a = 0$
 }
 method odb (){
-    int a = 0$
+    ;int a = 0$
 }
 '''
-# resultado = analizar(src)
+#resultado = analizar(src)
 # print(resultado)
-#test(src)
+# test(src)

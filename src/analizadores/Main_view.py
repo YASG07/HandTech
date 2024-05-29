@@ -242,9 +242,11 @@ def analisisCompleto(resul=None):
             a_tok.append((tok.type, tok.value, tok.lineno, tok.lexpos))
         
         mostrarAnalisisLexico2(a_tok)
+        print(analizar(cadena))
         #mostrarAnalisisSintactico2(a_tok)
         # Mostrar errores léxicos si existen
         imprimir_errores()
+        imprimir_errores_semanticos()
         
         # Análisis sintáctico
         tabla_errores.clear()
@@ -259,8 +261,7 @@ def analisisCompleto(resul=None):
             
         # Mostrar errores sintácticos si existen
         imprimir_errores()
-        # Análisis semántico (si lo tienes implementado)
-        #imprimir_errores_semanticos()
+        imprimir_errores_semanticos()
         # Volver a deshabilitar la edición del widget
         scrollAnalisis.config(state="disabled")
     else:
@@ -271,8 +272,6 @@ def imprimir_errores():
     scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
     scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
     lexer.lineno=0
-    for i in range(len(tabla_errores)):
-            print(tabla_errores[i])
     for error in tabla_errores:
         texto_error = f"Indice: {error['Indice']},"
         texto_error += f"Tipo: {error['Tipo']},"
@@ -331,9 +330,8 @@ def imprimir_errores_semanticos():
     scrollAnalisis.config(state="normal")
     scrollAnalisis.delete(1.0, END)
     for error in errores:
-        texto_error = f"Error:{error['']}"
+        texto_error = f"{error}\n"
         scrollAnalisis.insert(INSERT, texto_error)
-    errores.clear()
     scrollAnalisis.config(state="disabled")
 
 def tablaEstatica():
