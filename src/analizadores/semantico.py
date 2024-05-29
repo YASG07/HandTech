@@ -74,6 +74,14 @@ def analisis(asa):
         analisis(asa[2]) #manda a ejecutar el método con el bloque como parametro
     elif nodo == 'funcion':
         print(nodo)
+        identificador = asa[1]
+        if identificador in tablaSimbolos:
+            if tablaSimbolos[identificador] == 'función':
+                errores.append(f"Error Semántico: método '{identificador}' ya definido")
+            elif tablaSimbolos[identificador] == 'Error':
+                tablaSimbolos[identificador] = 'función'
+        else:
+            tablaSimbolos[identificador] = 'función'
         analisis(asa[2]) #manda a ejecutar el método con el bloque como parametro
     elif nodo == 'bloque':
         print(nodo)
@@ -82,6 +90,10 @@ def analisis(asa):
         fase += 1 
         if fase < longitud_asa: 
             analisis(asaCompleto[fase]) #avanza al siguiente bloque si la fase no esta fuera de rango
+        else:    
+            for item in tablaSimbolos:
+                if tablaSimbolos[item] == 'Error':
+                    errores.append(f"Error Semántico: el método '{item}' no puede ejecutarse porque no esta definido")
     elif nodo == 'asignacion':
         print(nodo)
         tipoDato = asa[1]
@@ -139,17 +151,11 @@ def analisis(asa):
                 errores.append(f"Error Semántico: '{valor}' no puede ser convertido a '{tipoDato}'")
         elif type(valor).__name__ != tipoDato:
             errores.append(f"Error Semántico: '{valor}' no puede ser convertido a '{tipoDato}'")
-    elif nodo == 'operacion':
+    elif nodo == 'llamada':
         print(nodo)
-        izq = asa[1]
-        print(izq)
-        der = asa[3]
-        print(der)
-        analisis(izq)
-        analisis(der)
-    elif nodo == 'grupo':
-        print(nodo)
-        analisis(asa[1])
+        metodo = asa[1]
+        if metodo not in tablaSimbolos:
+            tablaSimbolos[metodo] = 'Error'
      
 def analizar(src):
     destructor()

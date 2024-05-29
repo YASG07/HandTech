@@ -231,7 +231,7 @@ def p_llamada(prod):
             | ID DOT ID LPARENT expression RPARENT FIN_DE_INSTRUCCION
     '''
     if len(prod) == 5:
-        prod[0] = prod[1]
+        prod[0] = ('llamada', prod[1])
     elif len(prod) == 7 | len(prod) == 6:
         prod[0] = ('llamada_punto', prod[1], prod[3])
     elif len(prod) == 8:
