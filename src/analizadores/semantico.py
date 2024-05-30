@@ -80,6 +80,8 @@ def analisis(asa):
                 errores.append(f"Error Semántico: método '{identificador}' ya definido")
             elif tablaSimbolos[identificador] == 'Error':
                 tablaSimbolos[identificador] = 'función'
+            elif tablaSimbolos[identificador] != 'Error':
+                errores.append(f"Error Semántico: identifacador '{identificador}' en uso")
         else:
             tablaSimbolos[identificador] = 'función'
         analisis(asa[2]) #manda a ejecutar el método con el bloque como parametro
