@@ -12,3 +12,4 @@
 
 ### Instrucciones:
 * Abrir una terminal en Visual (ctrl + ñ) y ejecutar el comando [[pip install ply](https://pypi.org/project/ply/)]
+* Ejcutar el archivo Codigo_Fuente/Main_view.py para abrir la interfaz

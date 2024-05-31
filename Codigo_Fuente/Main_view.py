@@ -281,7 +281,6 @@ def imprimir_errores():
         texto_error += f"Columna: {error['Columna']}\n"
         scrollAnalisis.insert(INSERT, texto_error)
     scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
-    print(texto_error)
 
 def mostrarAnalisisSintactico2(data):
     global sintactico_window
