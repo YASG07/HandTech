@@ -1,0 +1,11 @@
+method run (){
+ sla()$
+}
+method slap(){
+ int t = 5.2$
+ float a = t$
+ int slap = 0$
+}
+method slap(){
+ hand.close()$
+}

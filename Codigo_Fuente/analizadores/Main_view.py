@@ -3,13 +3,15 @@ from tkinter import filedialog
 from tkinter.scrolledtext import ScrolledText
 from tkinter import messagebox as mb
 from lexico import tokens, reserved, lexer, descriptions, tabla_errores
-from sintactico import parser, yacc, tabla_errores_sintacticos
+from sintactico import parser, yacc
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinter import ttk
 from semantico import analizar, errores
+import re
 
 # Estructura Visual del compilador y funciones basicas
+
 
 class ScrollTextWithLineNumbers(Frame):
     def __init__(self, master, **kwargs):
@@ -20,7 +22,7 @@ class ScrollTextWithLineNumbers(Frame):
         self.line_numbers.pack(side='left', fill='y')  # Empaqueta el widget en el lado izquierdo y lo hace llenar en la dirección y
 
         # Crear el widget de texto desplazable
-        self.text_widget = ScrolledText(self, width=100, height=36)
+        self.text_widget = ScrolledText(self, width=105, height=10)
         self.text_widget.pack(side='left', fill='both', expand=True)  # Empaqueta el widget en el lado izquierdo y lo hace llenar en ambas direcciones y expandir su tamaño
 
         # Crear la barra de desplazamiento
@@ -32,13 +34,94 @@ class ScrollTextWithLineNumbers(Frame):
         self.scrollbar.config(command=self.text_widget.yview)  # Configura el comando de la barra de desplazamiento
 
         # Asignar eventos a los widgets de texto
-        self.text_widget.bind_all('<Key>', self._on_text_change)  # Asigna el evento Key (tecla) al método _on_text_change
+        self.text_widget.bind("<KeyRelease>", self.on_key_release)
+#        self.text_widget.bind('<Key>', self._on_text_change)  # Asigna el evento Key (tecla) al método _on_text_change
         self.text_widget.bind('<Return>', self._on_text_change)  # Asigna el evento Return (retorno) al método _on_text_change
         self.text_widget.bind('<Button-4>', self._scroll_up)  # Asigna el evento Button-4 (rueda del mouse hacia arriba) al método _scroll_up
         self.text_widget.bind('<Button-5>', self._scroll_down)  # Asigna el evento Button-5 (rueda del mouse hacia abajo) al método _scroll_down
         
         # Actualizar los números de línea
         self._update_line_numbers()
+
+#Intento de resaltar palabras en azul ---------------------------------------------------------------- 
+        self._create_tags()
+
+    def _create_tags(self):
+        # Crear etiquetas para los tokens y las palabras reservadas
+        self.text_widget.tag_configure("TOKEN", foreground="blue")
+        self.text_widget.tag_configure("RESERVED", foreground="orange")
+        self.text_widget.tag_configure("SYMBOL", foreground="red")
+        self.text_widget.tag_configure("COMMENT", foreground="gray52")
+
+    def on_key_release(self, event):
+            self.highlight_code()
+
+    def highlight_code(self):
+        code = self.text_widget.get("1.0", tk.END)
+        self.text_widget.mark_set("range_start", "1.0")
+
+        # Eliminar todas las etiquetas previas
+        for tag in self.text_widget.tag_names():
+            self.text_widget.tag_remove(tag, "1.0", tk.END)
+
+        # Resaltar palabras reservadas (insensible a mayúsculas/minúsculas)
+        for word in reserved:
+            start_index = "1.0"
+            while True:
+                start_index = self.text_widget.search(r'(?i)\b' + re.escape(word) + r'\b', start_index, tk.END, regexp=True)
+                if not start_index:
+                    break
+                end_index = f"{start_index}+{len(word)}c"
+                self.text_widget.tag_add("RESERVED", start_index, end_index)
+                start_index = end_index
+
+        # Resaltar tokens (insensible a mayúsculas/minúsculas)
+        for pattern in tokens:
+            regex = re.compile(r'(?i)\b' + pattern + r'\b')
+            for match in regex.finditer(code):
+                start_index = f"1.0 + {match.start()}c"
+                end_index = f"1.0 + {match.end()}c"
+                self.text_widget.tag_add("TOKEN", start_index, end_index)
+
+        # Resaltar símbolos
+        symbols = [r'\{', r'\}', r'\(', r'\)', r'\[', r'\]']
+        for symbol in symbols:
+            start_index = "1.0"
+            while True:
+                start_index = self.text_widget.search(symbol, start_index, tk.END, regexp=True)
+                if not start_index:
+                    break
+                end_index = f"{start_index}+1c"
+                self.text_widget.tag_add("SYMBOL", start_index, end_index)
+                start_index = end_index
+
+        # Resaltar comentarios de una sola línea
+        start_index = "1.0"
+        while True:
+            start_index = self.text_widget.search(';', start_index, tk.END)
+            if not start_index:
+                break
+            end_index = self.text_widget.search('\n', start_index, tk.END)
+            if not end_index:
+                end_index = tk.END
+            self.text_widget.tag_add("COMMENT", start_index, end_index)
+            start_index = end_index
+
+        # Resaltar comentarios de múltiples líneas
+        start_index = "1.0"
+        while True:
+            start_index = self.text_widget.search(r'<-', start_index, tk.END)
+            if not start_index:
+                break
+            end_index = self.text_widget.search(r'->', start_index, tk.END)
+            if not end_index:
+                end_index = tk.END
+            else:
+                end_index = f"{end_index}+2c"  # Incluir los caracteres '->' en el resaltado
+            self.text_widget.tag_add("COMMENT", start_index, end_index)
+            start_index = end_index
+#------------------------------------------------------------------------------------------------------
+
         
     def _scroll_text(self, *args):
         self.text_widget.yview(*args)
@@ -74,6 +157,7 @@ class ScrollTextWithLineNumbers(Frame):
     def clear_scroll_text(self):
         self.text_widget.delete(1.0, 'end')  # Borra todo el texto en el widget
         self._update_line_numbers()  # Actualiza la numeración de líneas
+
 
 # Variables para almacenar las referencias de las ventanas
 lexico_window = None
@@ -120,60 +204,84 @@ def mostrarAnalisisLexico2(tokens):
     # Configurar la posición de los widgets
     tree.pack(side='left', fill='both', expand=True)
     scrollbar.pack(side='right', fill='y')
-    lexer.lineno = 1
-    for i in range(len(tabla_errores)):
-        print(tabla_errores[i])
 
 
 def analisisLexico():
-    scrollErroresLexicos.config(state="normal")  # Cambiar el estado a normal para permitir la edición
-    scrollErroresLexicos.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
-    scrollErroresLexicos.config(state="disabled")  # Volver a deshabilitar la edición    
+    scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+    scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
+    scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición    
     cadena = scroll_text_widget.get_text()
     if len(cadena) > 0:
         lexer.input(cadena)
         a_tok = []
         for tok in lexer:
             a_tok.append((tok.type, tok.value, tok.lineno, tok.lexpos))
+        imprimir_errores()
         mostrarAnalisisLexico2(a_tok)
         # Imprimir la tabla de errores en scrollAnalisis
-        imprimir_errores()
     else:
         mb.showwarning("ERROR", "Debes escribir código")
+    lexer.lineno=1
 
 #----------------------------------------------------------------------Funciones lexico sintactico en un solo boton----------
-def analisisCompleto():
-    scrollErroresLexicos.config(state="normal")  # Cambiar el estado a normal para permitir la edición
-    scrollErroresLexicos.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
-    scrollErroresLexicos.config(state="disabled")  # Volver a deshabilitar la edición  
-
-    scrollErroresSintacticos.config(state="normal")  # Cambiar el estado a normal para permitir la edición
-    scrollErroresSintacticos.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
-    scrollErroresSintacticos.config(state="disabled")  # Volver a deshabilitar la edición 
-
-    tabla_errores.clear()
-    tabla_errores_sintacticos.clear()
+def analisisCompleto(resul=None):
+    # Obtener el texto del widget
+    cadena = scroll_text_widget.get_text()
+    if len(cadena) > 0:
+        # Resetear el estado del widget de análisis
+        scrollAnalisis.config(state="normal")
+        scrollAnalisis.delete(1.0, END)
+        
+        # Limpiar la tabla de errores
+        tabla_errores.clear()
+        
+        # Análisis léxico
+        lexer.input(cadena)
+        a_tok = []
+        for tok in lexer:
+            a_tok.append((tok.type, tok.value, tok.lineno, tok.lexpos))
+        
+        mostrarAnalisisLexico2(a_tok)
+        print(analizar(cadena))
+        #mostrarAnalisisSintactico2(a_tok)
+        # Mostrar errores léxicos si existen
+        imprimir_errores()
+        imprimir_errores_semanticos()
+        
+        # Análisis sintáctico
+        tabla_errores.clear()
+        try:
+            resultado = parser.parse(cadena)
+            mostrarAnalisisSintactico2(resultado)
+            scrollAnalisis.insert(END, "Análisis Sintáctico Correcto\n")
+        except yacc.YaccError as e:
+            #imprimir_errores_sintacticos()
+            scrollAnalisis.insert(END, "Errores Sintácticos:\n")
+            scrollAnalisis.insert(END, str(e))
+            
+        # Mostrar errores sintácticos si existen
+        imprimir_errores()
+        imprimir_errores_semanticos()
+        # Volver a deshabilitar la edición del widget
+        scrollAnalisis.config(state="disabled")
+    else:
+        mb.showwarning("ERROR", "Debes escribir código")
     
-    analisisLexico()
-    analisisSintactico()
-
-    # Reiniciar el número de línea del lexer
-    lexer.lineno = 1
 #------------------------------------------------------------------------------------------------------------------------------------
 def imprimir_errores():
-    scrollErroresLexicos.config(state="normal")  # Cambiar el estado a normal para permitir la edición
-    scrollErroresLexicos.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
+    scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+    scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
+    lexer.lineno=0
     for error in tabla_errores:
-        texto_error = f"Indice: {error['Indice']}\n"
-        texto_error += f"Tipo: {error['Tipo']}\n"
-        texto_error += f"Descripción: {error['Descripción']}\n"
-        texto_error += f"Valor: {error['Valor']}\n"
-        texto_error += f"Linea: {error['Linea']}\n"
-        texto_error += f"Columna: {error['columna']}\n\n"
-
-        scrollErroresLexicos.insert(INSERT, texto_error)
-    tabla_errores.clear()
-    scrollErroresLexicos.config(state="disabled")  # Volver a deshabilitar la edición    
+        texto_error = f"Indice: {error['Indice']},"
+        texto_error += f"Tipo: {error['Tipo']},"
+        texto_error += f"Descripción: {error['Descripción']},"
+        texto_error += f"Valor: {error['Valor']},"
+        texto_error += f"Linea: {error['Linea']},"
+        texto_error += f"Columna: {error['Columna']}\n"
+        scrollAnalisis.insert(INSERT, texto_error)
+    scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
+    print(texto_error)
 
 def mostrarAnalisisSintactico2(data):
     global sintactico_window
@@ -198,10 +306,7 @@ def mostrarAnalisisSintactico2(data):
         for item in data:
             text_area.insert(END, str(item) + '\n')
     text_area.config(state="disabled") # Volver a deshabilitar la edición
-    for i in range(len(tabla_errores_sintacticos)):
-        print(tabla_errores_sintacticos[i])
 
-    lexer.lineno = 1
     
 def analisisSintactico():
     cadena = scroll_text_widget.get_text()
@@ -209,56 +314,25 @@ def analisisSintactico():
         try:
             resultado = parser.parse(cadena)
             mostrarAnalisisSintactico2(resultado)
-            scrollErroresSintacticos.config(state="normal")  # Cambiar el estado a normal para permitir la edición
-            scrollErroresSintacticos.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
-            scrollErroresSintacticos.insert(END, "Analisis Correcto\n")
-            errores_sintacticos = (imprimir_errores_sintacticos())#(imprimir_errores_sintacticos())
-            scrollErroresSintacticos.insert(END, errores_sintacticos)
-            scrollErroresSintacticos.config(state="disabled")  # Volver a deshabilitar la edición
+            scrollAnalisis.config(state="normal")  # Cambiar el estado a normal para permitir la edición
+            scrollAnalisis.delete(1.0, END)  # Borra el contenido actual del `ScrolledText`
+            scrollAnalisis.insert(END, "Analisis Correcto\n")
+            #errores_sintacticos = (imprimir_errores_sintacticos())#(imprimir_errores_sintacticos())
+            #scrollAnalisis.insert(END, errores_sintacticos)
+            scrollAnalisis.config(state="disabled")  # Volver a deshabilitar la edición
         except yacc.YaccError as e:
             imprimir_errores(e)
             mb.showerror("Error", str(e))
     else:
         mb.showwarning("ERROR", "Debes escribir código")
-    lexer.lineno = 1
 
-def imprimir_errores_sintacticos():
-    scrollErroresSintacticos.config(state="normal")  # Cambiar el estado a normal para permitir la edición
-    scrollErroresSintacticos.delete(1.0, END)  # Borra el contenido actual del ScrolledText
-    errores = ""
-    for error in tabla_errores_sintacticos:
-        texto_error = f"Indice: {error['Indice']}\n"
-        texto_error += f"Tipo: {error['Tipo']}\n"
-        texto_error += f"Descripción: {error['Descripción']}\n"
-        texto_error += f"Valor: {error['Valor']}\n"
-        texto_error += f"Linea: {error['Linea']}\n"
-        texto_error += f"Columna: {error['Columna']}\n\n"
-        errores += texto_error
-    scrollErroresSintacticos.insert(INSERT, errores)
-    tabla_errores_sintacticos.clear()
-    scrollErroresSintacticos.config(state="disabled")  # Volver a deshabilitar la edición
-    
-def analisisSemantico():
-    cadena = scroll_text_widget.get_text()
-    if len(cadena) > 0:
-        try:
-            resultado = analizar(cadena)
-            print(resultado)
-            #imprimir_errores_semanticos()
-        except:
-            mb.showerror("Error al analizar")
-    else:
-        mb.showwarning("ERROR",'Debes escribir código')
-    lexer.lineno = 1
 
 def imprimir_errores_semanticos():
     scrollAnalisis.config(state="normal")
     scrollAnalisis.delete(1.0, END)
-    errores=""
     for error in errores:
-        texto_error = f"Error:{errores['']}"
-    scrollAnalisis.insert(INSERT, texto_error)
-    errores.clear()
+        texto_error = f"{error}\n"
+        scrollAnalisis.insert(INSERT, texto_error)
     scrollAnalisis.config(state="disabled")
 
 def tablaEstatica():
@@ -367,12 +441,12 @@ def Ventana2(data,title):
 # Funciones adicionales (AbrirArchivos, GuardarComo, Guardar, NuevoArchivo, etc.) se mantienen igual
 root = Tk()
 root.resizable(FALSE,FALSE) # Con esto denegamos que se ajuste el tamaño de la ventana de largo y ancho
-root.geometry("1200x596") #definimos las dimesiones de la ventana
+root.geometry("924x596") #definimos las dimesiones de la ventana
 root.title("Compilador HandTech") #Titulo de la ventana
 
 wtotal = root.winfo_screenwidth()
 htotal = root.winfo_screenheight()
-wventana = 1200
+wventana = 930
 hventana = 599
 pwidth = round(wtotal/2-wventana/2)
 pheight = round(htotal/2-hventana/2)
@@ -381,13 +455,8 @@ root.geometry(str(wventana)+"x"+str(hventana)+"+"+str(pwidth)+"+"+str(pheight))
 scroll_text_widget = ScrollTextWithLineNumbers(root)
 scroll_text_widget.grid(row=1,column=0,padx=10,pady=10)
 
-scrollErroresLexicos = ScrolledText(root, width=30,  height=15, font = cambiar_tamaño_letra, state="disable")
-scrollErroresLexicos.grid(row=1,column=1,padx=0,pady=10, sticky="new")
-
-scrollErroresSintacticos = ScrolledText(root, width=30,  height=15, font = cambiar_tamaño_letra, state="disable")
-scrollErroresSintacticos.grid(row=1,column=1,padx=0,pady=10,sticky="sew")
-
-
+scrollAnalisis = ScrolledText(root, width=100,  height=8, font = cambiar_tamaño_letra, state="disable")
+scrollAnalisis.grid(row=5,column=0,padx=10,pady=10)
 
 def cambiar_tamaño_letra(size):
     scroll_text_widget.text_widget.config(font=("Console", size))
@@ -406,7 +475,7 @@ menubar.add_cascade(label="File", menu=file)
 analisis = Menu(menubar, tearoff=0)   
 analisis.add_command(label="Lexico",command=analisisLexico)  
 analisis.add_command(label="Sintactico", command=analisisSintactico) 
-analisis.add_command(label="Semantico", command=analisisSemantico) 
+#analisis.add_command(label="Semantico", command=analisisSemantico) 
 menubar.add_cascade(label="Analizar", menu=analisis)
 
 
@@ -425,7 +494,7 @@ font_menu.add_command(label="20", command=lambda: cambiar_tamaño_letra(20))
 
 menubar.add_radiobutton(label="Compilar", command=analisisCompleto) #BOTON LEXICO SINTACTICO 
 
-menubar.add_cascade(label="Tamaño de la letra xd", menu=font_menu)
+menubar.add_cascade(label="Tamaño de la letra", menu=font_menu)
 
 root.config(menu=menubar)
 root.mainloop()
